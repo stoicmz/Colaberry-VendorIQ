@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "project": {
+    "name": "VendorIQ",
+    "descriptor": "An AI-driven job-seeker protection platform that tracks recruiter and vendor behavior patterns over time."
+  },
+  "schedule": {
+    "build_start": "2026-08-08",
+    "build_end": "2026-10-01",
+    "demo_day": "2026-10-08",
+    "demo_release_key": "r4"
+  },
+  "derived": {
+    "measures": [],
+    "roles": [
+      "job seeker",
+      "data reviewer",
+      "product manager",
+      "compliance officer",
+      "system administrator"
+    ],
+    "guardrails": [
+      { "id": "REQ-007", "statement": "The system must ensure data is correctly attributed to the right recruiter." },
+      { "id": "REQ-010", "statement": "The system must support manual data review to ensure completeness and correctness." },
+      { "id": "REQ-014", "statement": "The system must ensure data is clean before ingestion." }
+    ],
+    "systems": ["Gmail", "Outlook", "LinkedIn", "Slack", "CRM", "ATS"],
+    "counts": {
+      "agents_by_autonomy": {}
+    }
+  },
+  "requirements": [
+    { "id": "REQ-001", "statement": "The system must ingest recruiter interaction data from a CSV/XLSX file.", "kind": "FUNC", "priority": "must", "cluster": "Ingestion", "fulfilled_by": ["STORY-001"] },
+    { "id": "REQ-002", "statement": "The system must display a dashboard showing recruiter interaction history to job seekers.", "kind": "FUNC", "priority": "must", "cluster": "Display", "fulfilled_by": ["STORY-002"] },
+    { "id": "REQ-003", "statement": "The system must highlight red flags in recruiter interactions for manual review.", "kind": "FUNC", "priority": "must", "cluster": "Review", "fulfilled_by": ["STORY-004"] },
+    { "id": "REQ-004", "statement": "The system must allow job seekers to manually verify data accuracy before displaying it.", "kind": "FUNC", "priority": "must", "cluster": "Review", "fulfilled_by": ["STORY-003"] },
+    { "id": "REQ-005", "statement": "The system must flag uncertain data for manual review without making automated judgments.", "kind": "FUNC", "priority": "must", "cluster": "Review", "fulfilled_by": ["STORY-005"] },
+    { "id": "REQ-006", "statement": "The system must provide clear explanations of displayed data to job seekers.", "kind": "FUNC", "priority": "must", "cluster": "Display", "fulfilled_by": ["STORY-007"] },
+    { "id": "REQ-007", "statement": "The system must ensure data is correctly attributed to the right recruiter.", "kind": "SAFE", "priority": "must", "cluster": "Guardrails", "fulfilled_by": ["STORY-003"] },
+    { "id": "REQ-008", "statement": "Every screen the job seeker uses must complete its primary action in three clicks or fewer.", "kind": "NFR", "priority": "must", "cluster": "Usability", "fulfilled_by": [] },
+    { "id": "REQ-009", "statement": "The system must not integrate with Gmail, Outlook, LinkedIn, Slack, CRM systems, or ATS systems.", "kind": "CONSTRAINT", "priority": "must", "cluster": "Constraints", "fulfilled_by": [] },
+    { "id": "REQ-010", "statement": "The system must support manual data review to ensure completeness and correctness.", "kind": "SAFE", "priority": "must", "cluster": "Guardrails", "fulfilled_by": ["STORY-011"] },
+    { "id": "REQ-011", "statement": "The system must display message frequency and timestamps in the dashboard.", "kind": "FUNC", "priority": "must", "cluster": "Display", "fulfilled_by": ["STORY-006"] },
+    { "id": "REQ-012", "statement": "The system must show whether replies occurred in recruiter interactions.", "kind": "FUNC", "priority": "must", "cluster": "Display", "fulfilled_by": ["STORY-012"] },
+    { "id": "REQ-013", "statement": "The system must allow job seekers to see responsiveness and follow-up patterns.", "kind": "FUNC", "priority": "must", "cluster": "Display", "fulfilled_by": ["STORY-013"] },
+    { "id": "REQ-014", "statement": "The system must ensure data is clean before ingestion.", "kind": "SAFE", "priority": "must", "cluster": "Guardrails", "fulfilled_by": ["STORY-014"] },
+    { "id": "REQ-015", "statement": "The system must not score or judge recruiter behavior automatically.", "kind": "CONSTRAINT", "priority": "must", "cluster": "Constraints", "fulfilled_by": [] },
+    { "id": "REQ-016", "statement": "The system must provide a trial period with real users to ensure reliability.", "kind": "REL", "priority": "should", "cluster": "Reliability", "fulfilled_by": ["STORY-008"] },
+    { "id": "REQ-017", "statement": "The system must gather positive user feedback to confirm reliability and ease of use.", "kind": "REL", "priority": "should", "cluster": "Reliability", "fulfilled_by": ["STORY-009"] },
+    { "id": "REQ-018", "statement": "The system must maintain a log of manual reviews for audit purposes.", "kind": "OBS", "priority": "should", "cluster": "Audit", "fulfilled_by": ["STORY-010"] }
+  ],
+  "stories": [
+    { "id": "STORY-001", "title": "Ingest recruiter interaction data from CSV/XLSX", "release": "r0", "role": "job seeker", "owner": "Development Team", "due_on": "2026-08-08", "due_baseline_on": "2026-08-08", "narrative": "As a job seeker, I want to upload my recruiter interaction history as a CSV or XLSX file so that the system has my data to work with." },
+    { "id": "STORY-002", "title": "Display recruiter interaction history on dashboard", "release": "r0", "role": "job seeker", "owner": "Frontend Developer", "due_on": "2026-08-13", "due_baseline_on": "2026-08-13", "narrative": "As a job seeker, I want to see my recruiter interaction history on a dashboard so that I can review it in one place." },
+    { "id": "STORY-003", "title": "Manual verification of data accuracy and attribution", "release": "r0", "role": "data reviewer", "owner": "Data Reviewer", "due_on": "2026-08-18", "due_baseline_on": "2026-08-18", "narrative": "As a data reviewer, I want to manually verify that ingested data is accurate and attributed to the correct recruiter so that job seekers see trustworthy information." },
+    { "id": "STORY-014", "title": "Ensure data is clean before ingestion", "release": "r0", "role": "system administrator", "owner": "System Administrator", "due_on": "2026-08-23", "due_baseline_on": "2026-08-23", "narrative": "As a system administrator, I want incoming data cleaned before it is ingested so that downstream processing is not corrupted by malformed records." },
+    { "id": "STORY-004", "title": "Highlight red flags in recruiter interactions", "release": "r1", "role": "job seeker", "owner": "Development Team", "due_on": "2026-08-20", "due_baseline_on": "2026-08-20", "narrative": "As a job seeker, I want red flags in recruiter interactions highlighted so that I know what to look at more closely." },
+    { "id": "STORY-005", "title": "Flag uncertain data for manual review", "release": "r1", "role": "data reviewer", "owner": "Development Team", "due_on": "2026-08-26", "due_baseline_on": "2026-08-26", "narrative": "As a data reviewer, I want uncertain data flagged for manual review instead of automatically judged so that no automated decision is made without a human check." },
+    { "id": "STORY-011", "title": "Support manual data review for completeness and correctness", "release": "r1", "role": "data reviewer", "owner": "Data Reviewer", "due_on": "2026-09-02", "due_baseline_on": "2026-09-02", "narrative": "As a data reviewer, I want to manually review flagged data for completeness and correctness so that only trustworthy information reaches job seekers." },
+    { "id": "STORY-006", "title": "Display message frequency and timestamps", "release": "r2", "role": "job seeker", "owner": "Development Team", "due_on": "2026-08-28", "due_baseline_on": "2026-08-28", "narrative": "As a job seeker, I want to see message frequency and timestamps for each recruiter interaction so that I can judge how active the relationship is." },
+    { "id": "STORY-007", "title": "Provide clear explanations of displayed data", "release": "r2", "role": "job seeker", "owner": "Development Team", "due_on": "2026-09-02", "due_baseline_on": "2026-09-02", "narrative": "As a job seeker, I want clear explanations of the data shown to me so that I understand what I am looking at without guessing." },
+    { "id": "STORY-012", "title": "Display recruiter interaction reply status", "release": "r2", "role": "job seeker", "owner": "Job Seeker", "due_on": "2026-09-07", "due_baseline_on": "2026-09-07", "narrative": "As a job seeker, I want to see whether a recruiter interaction received a reply so that I can judge how responsive the recruiter has been." },
+    { "id": "STORY-013", "title": "Show job seekers recruiter responsiveness and follow-up patterns", "release": "r2", "role": "job seeker", "owner": "Job Seeker", "due_on": "2026-09-11", "due_baseline_on": "2026-09-11", "narrative": "As a job seeker, I want to see a recruiter's responsiveness and follow-up patterns so that I can decide how much to trust future outreach from them." },
+    { "id": "STORY-008", "title": "Collect user feedback during trial period", "release": "r3", "role": "product manager", "owner": "Product Management", "due_on": "2026-09-11", "due_baseline_on": "2026-09-11", "narrative": "As a product manager, I want to collect feedback from job seekers during a trial period so that I know whether the system is actually useful to them." },
+    { "id": "STORY-009", "title": "Ensure positive user feedback confirms reliability", "release": "r3", "role": "product manager", "owner": "Product Management", "due_on": "2026-09-21", "due_baseline_on": "2026-09-21", "narrative": "As a product manager, I want positive trial feedback to confirm the system's reliability so that I have evidence the system is ready beyond the trial group." },
+    { "id": "STORY-010", "title": "Maintain a log of manual reviews for audit purposes", "release": "r4", "role": "compliance officer", "owner": "Compliance Team", "due_on": "2026-10-01", "due_baseline_on": "2026-10-01", "narrative": "As a compliance officer, I want a log of every manual review kept for audit purposes so that the review process can be inspected after the fact." }
+  ],
+  "releases": [
+    { "key": "r0", "name": "Initial Data Ingestion and Display", "starts_on": "2026-08-08", "ends_on": "2026-08-23", "story_ids": ["STORY-001", "STORY-002", "STORY-003", "STORY-014"], "is_demo_target": false },
+    { "key": "r1", "name": "Red Flag Highlighting and Manual Review", "starts_on": "2026-08-20", "ends_on": "2026-09-02", "story_ids": ["STORY-004", "STORY-005", "STORY-011"], "is_demo_target": false },
+    { "key": "r2", "name": "Enhanced Data Display and User Guidance", "starts_on": "2026-08-28", "ends_on": "2026-09-11", "story_ids": ["STORY-006", "STORY-007", "STORY-012", "STORY-013"], "is_demo_target": false },
+    { "key": "r3", "name": "User Feedback and Trial Period", "starts_on": "2026-09-11", "ends_on": "2026-09-21", "story_ids": ["STORY-008", "STORY-009"], "is_demo_target": false },
+    { "key": "r4", "name": "Audit and Reliability Assurance", "starts_on": "2026-10-01", "ends_on": "2026-10-01", "story_ids": ["STORY-010"], "is_demo_target": true }
+  ],
+  "agents": []
+}
