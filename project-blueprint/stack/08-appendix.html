@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Appendix — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 8 of 8</div>
+    <h1 id="page-title">Appendix</h1>
+    <p class="lede">What this document does NOT tell you, honestly — plus confirmation that every architecture component got a row.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("appendix");
+  var items = STACK.notCovered;
+  document.getElementById("page-title").textContent = "Appendix";
+
+  function row(t, i) {
+    return '<li class="searchable" id="notcovered-' + i + '" data-idx-id="notcovered-' + i + '"><span class="nc-searchtext" style="font-size:13.6px;">' + VIQ.escapeHtml(t) + '</span></li>';
+  }
+
+  var covered = STACK.architectureComponents.map(function (name) {
+    var match = STACK.recommendations.filter(function (r) { return r.component === name; })[0];
+    return { name: name, match: match };
+  });
+  var allCovered = covered.every(function (c) { return !!c.match; });
+
+  function coverageRow(c) {
+    return '<tr><td>' + VIQ.escapeHtml(c.name) + '</td>' +
+      '<td>' + (c.match ? '<span class="badge good">✓ has a row</span>' : '<span class="badge risk">✗ missing</span>') + '</td>' +
+      '<td>' + (c.match ? '<a href="' + (c.match.group === "flow" ? "03-dataflow-needs.html" : "02-recommendations.html") + '#' + c.match.id + '">' + VIQ.escapeHtml(c.match.tech) + '</a>' : '—') + '</td></tr>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block card">' +
+    '<h2><span class="num">8.1</span>Component coverage check</h2>' +
+    '<p class="sub">Every component named in architecture.md, cross-checked against this document\'s recommendations.</p>' +
+    '<p style="font-size:13.6px;"><span class="badge ' + (allCovered ? "good" : "risk") + '">' + (allCovered ? "✓ All " + covered.length + " architecture components have a row" : "⚠ Some components are missing a row") + '</span></p>' +
+    '<div class="table-scroll"><table class="data-table"><thead><tr><th>Architecture component</th><th>Status</th><th>Recommended technology</th></tr></thead><tbody>' +
+    covered.map(coverageRow).join("") + '</tbody></table></div></div>' +
+
+    '<div class="section-block card">' +
+    '<h2><span class="num">8.2</span>What this document does NOT tell you</h2>' +
+    '<ul style="padding-left:18px;display:flex;flex-direction:column;gap:8px;margin:0;">' + items.map(row).join("") + '</ul></div>';
+
+  VIQ.enablePageFilter(".searchable", ".nc-searchtext");
+  VIQ.mountAskPanel("ask-panel", "appendix");
+})();
+</script>
+</body>
+</html>

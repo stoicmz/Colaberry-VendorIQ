@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recommendations — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 2 of 8</div>
+    <h1 id="page-title">Recommendations</h1>
+    <p class="lede">One technology per architecture component, grouped by what a person touches, what you write, and what you store.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("recommendations");
+  var groups = STACK.groups.filter(function (g) { return g.id !== "flow"; });
+  var recs = STACK.recommendations.filter(function (r) { return r.group !== "flow"; });
+  document.getElementById("page-title").textContent = "Recommendations (" + recs.length + ")";
+
+  function recCard(r) {
+    return '<div class="rec-card rating-' + r.rating + ' searchable" id="' + r.id + '" data-idx-id="rec-' + r.id + '">' +
+      '<div class="rec-head"><div><div class="rec-component">' + VIQ.escapeHtml(r.component) + '</div>' +
+      '<div class="rec-tech">' + VIQ.escapeHtml(r.tech) + '</div></div>' +
+      '<span class="rating-pill ' + r.rating + '">' + STACK.ratingKey.filter(function(k){return k.level===r.rating;})[0].icon + '</span></div>' +
+      '<p class="rec-why rec-searchtext">' + VIQ.escapeHtml(r.why) + '</p>' +
+      (r.caveat ? '<div class="rec-caveat"><b>Caveat:</b> ' + VIQ.escapeHtml(r.caveat) + '</div>' : '') +
+      '<div class="rec-meta"><span class="group-chip">' + VIQ.escapeHtml(STACK.groups.filter(function(g){return g.id===r.group;})[0].label) + '</span></div>' +
+      '<div class="copy-row" style="margin-top:12px;"><span class="copy-text" style="color:var(--muted);">' + VIQ.escapeHtml(r.prompt) + '</span>' + VIQ.copyButtonHtml(r.prompt, "Copy prompt") + '</div>' +
+      '</div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">2.1</span>The stack as bands</h2>' +
+    '<p class="sub">Every recommendation, grouped and coloured by fit rating.</p>' +
+    '<div id="fig-bands"></div></div>' +
+
+    groups.map(function (g) {
+      var items = recs.filter(function (r) { return r.group === g.id; });
+      return '<div class="section-block">' +
+        '<h2><span class="num">2.' + (groups.indexOf(g) + 2) + '</span>' + VIQ.escapeHtml(g.label) + ' (' + items.length + ')</h2>' +
+        '<p class="sub">' + VIQ.escapeHtml(g.blurb) + '</p>' +
+        '<div class="rec-grid">' + items.map(recCard).join("") + '</div></div>';
+    }).join("");
+
+  VIQ.mountFigure("fig-bands", {
+    title: "The stack as bands, coloured by fit rating",
+    kind: "svg",
+    svg: VIQ.svg.stackBands(),
+    interpretation: "Read down any band and you're reading one layer of VendorIQ; read across and you're seeing which layers are solid (green) versus which ones need a second look (amber/red) before you build on them."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".rec-searchtext");
+  VIQ.wireCopyButtons(document);
+  VIQ.mountAskPanel("ask-panel", "recommendations");
+})();
+</script>
+</body>
+</html>

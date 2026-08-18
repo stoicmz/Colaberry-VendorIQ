@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What The Data Flow Needs — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 3 of 8</div>
+    <h1 id="page-title">What The Data Flow Needs</h1>
+    <p class="lede">Never named in architecture.md's component list — these came from tracing what actually has to happen for data to move, not from the component table.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("dataflow-needs");
+  var recs = STACK.recommendations.filter(function (r) { return r.group === "flow"; });
+  document.getElementById("page-title").textContent = "What The Data Flow Needs (" + recs.length + ")";
+
+  function recCard(r) {
+    return '<div class="rec-card rating-' + r.rating + ' searchable" id="' + r.id + '" data-idx-id="rec-' + r.id + '">' +
+      '<div class="rec-head"><div><div class="rec-component">' + VIQ.escapeHtml(r.component) + '</div>' +
+      '<div class="rec-tech">' + VIQ.escapeHtml(r.tech) + '</div></div>' +
+      '<span class="rating-pill ' + r.rating + '">' + STACK.ratingKey.filter(function(k){return k.level===r.rating;})[0].icon + '</span></div>' +
+      '<p class="rec-why rec-searchtext">' + VIQ.escapeHtml(r.why) + '</p>' +
+      (r.caveat ? '<div class="rec-caveat"><b>Caveat:</b> ' + VIQ.escapeHtml(r.caveat) + '</div>' : '') +
+      '<div class="copy-row" style="margin-top:12px;"><span class="copy-text" style="color:var(--muted);">' + VIQ.escapeHtml(r.prompt) + '</span>' + VIQ.copyButtonHtml(r.prompt, "Copy prompt") + '</div>' +
+      '</div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">3.1</span>What runs on your machine, versus somebody else\'s</h2>' +
+    '<p class="sub">Everything in the left zone is something you operate; the dashed right zone is a third party VendorIQ depends on.</p>' +
+    '<div id="fig-topo"></div></div>' +
+
+    '<div class="section-block"><div class="rec-grid">' + recs.map(recCard).join("") + '</div></div>';
+
+  VIQ.mountFigure("fig-topo", {
+    title: "Your VPS versus somebody else’s servers",
+    kind: "svg",
+    svg: VIQ.svg.topology(),
+    interpretation: "On day one, everything but the deferred AI extraction layer runs on infrastructure you operate — the moment Phase 2 ships, that changes, and it's the one box on the right that needs the privacy review."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".rec-searchtext");
+  VIQ.wireCopyButtons(document);
+  VIQ.mountAskPanel("ask-panel", "dataflow-needs");
+})();
+</script>
+</body>
+</html>

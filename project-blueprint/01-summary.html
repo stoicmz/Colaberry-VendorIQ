@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Idea — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 1 of 7</div>
+    <h1>The Idea</h1>
+    <p class="lede">The one paragraph everything else in this blueprint is derived from — and the single sentence that outranks everything else.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("summary");
+  var B = BLUEPRINT.idea;
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block card searchable" data-idx-id="idea-paragraph">' +
+    '<h2><span class="num">1.1</span>Source paragraph</h2>' +
+    '<p class="sub">Exactly as given — every component in this blueprint traces back to specific words in it.</p>' +
+    '<p class="idea-text" style="font-size:15px;">' + VIQ.escapeHtml(B.paragraph) + '</p></div>' +
+
+    '<div class="section-block card searchable" data-idx-id="idea-guarantee">' +
+    '<h2><span class="num">1.2</span>The day-one guarantee</h2>' +
+    '<p class="sub">This sentence outranks everything else in the design. One component — the Behavior Pattern Engine — exists specifically to guarantee it.</p>' +
+    '<p class="idea-text" style="font-size:14.5px;"><span class="badge good">Day-one gate</span> &nbsp;“' + VIQ.escapeHtml(B.guaranteeSentence) + '”</p>' +
+    '<p style="font-size:13px;color:var(--muted);">Guaranteed by: <a href="02-components.html#' + B.guaranteeOwner + '">Behavior Pattern Engine</a></p></div>' +
+
+    '<div class="section-block card searchable" data-idx-id="idea-scope">' +
+    '<h2><span class="num">1.3</span>Scope note: proprietary methodology</h2>' +
+    '<p class="sub">This blueprint respects an existing, already-approved constraint in this repository.</p>' +
+    '<p class="idea-text" style="font-size:14px;"><span class="badge warn">Boundary</span> &nbsp;' + VIQ.escapeHtml(B.scopeNote) + '</p></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">1.4</span>The idea as a pipeline</h2>' +
+    '<p class="sub">What goes in, what VendorIQ does to it, what comes out.</p>' +
+    '<div id="fig-pipeline"></div></div>';
+
+  VIQ.mountFigure("fig-pipeline", {
+    title: "Idea as inputs → pipeline → output",
+    kind: "svg",
+    svg: VIQ.svg.ideaPipeline(),
+    interpretation: "Everything downstream exists only to make the middle box trustworthy — accurate, clear, and current — every single time."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".idea-text");
+  VIQ.mountAskPanel("ask-panel", "summary");
+})();
+</script>
+</body>
+</html>

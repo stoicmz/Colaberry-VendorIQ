@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Data Flow — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 4 of 7</div>
+    <h1 id="page-title">Data Flow</h1>
+    <p class="lede">A numbered walkthrough of the same path shown in the architecture diagram, plus the sequence-diagram view of it.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("dataflow");
+  var steps = BLUEPRINT.dataFlow.steps;
+  document.getElementById("page-title").textContent = "Data Flow (" + steps.length + " steps)";
+
+  function stepRow(s) {
+    return '<div class="card searchable" id="step-' + s.n + '" data-idx-id="flow-' + s.n + '" style="display:flex;gap:14px;align-items:flex-start;">' +
+      '<div style="min-width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:800;">' + s.n + '</div>' +
+      '<div><div style="font-weight:700;font-size:14px;">' + VIQ.escapeHtml(s.action) + ' <span class="badge neutral">' + VIQ.escapeHtml(s.actor) + '</span></div>' +
+      '<p class="flow-searchtext" style="margin:4px 0 0;font-size:13.4px;color:var(--text);">' + VIQ.escapeHtml(s.detail) + '</p></div></div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">4.1</span>Steps as a ribbon</h2>' +
+    '<p class="sub">Colour marks which steps touch the deferred AI layer.</p>' +
+    '<div id="fig-ribbon"></div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">4.2</span>Numbered walkthrough</h2>' +
+    '<div style="display:flex;flex-direction:column;gap:10px;">' + steps.map(stepRow).join("") + '</div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">4.3</span>Sequence diagram</h2>' +
+    '<p class="sub">The same walkthrough, shown as a request/response sequence between components.</p>' +
+    '<div id="fig-seq"></div></div>';
+
+  VIQ.mountFigure("fig-ribbon", {
+    title: "Data flow steps as a numbered ribbon",
+    kind: "svg",
+    svg: VIQ.svg.ribbon(),
+    interpretation: "Eight of nine steps are the deterministic core path; only the last, optional step touches the AI layer — and it re-enters the exact same validated path everything else uses."
+  });
+  VIQ.mountFigure("fig-seq", {
+    title: "VendorIQ data flow sequence",
+    kind: "mermaid",
+    code: BLUEPRINT.dataFlow.sequenceMermaid,
+    interpretation: BLUEPRINT.dataFlow.interpretation
+  });
+
+  VIQ.enablePageFilter(".searchable", ".flow-searchtext");
+  VIQ.mountAskPanel("ask-panel", "dataflow");
+})();
+</script>
+</body>
+</html>

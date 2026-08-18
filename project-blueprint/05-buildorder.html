@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Build Order — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 5 of 7</div>
+    <h1 id="page-title">Build Order</h1>
+    <p class="lede">What gets built first, and exactly what each phase has to prove before the next one starts.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("buildorder");
+  var phases = BLUEPRINT.buildOrder.phases;
+  document.getElementById("page-title").textContent = "Build Order (" + phases.length + " phases)";
+
+  function compNames(ids) {
+    return ids.map(function (id) {
+      var c = BLUEPRINT.components.filter(function (x) { return x.id === id; })[0];
+      return c ? c.name : id;
+    }).join(", ");
+  }
+
+  function phaseCard(p, i) {
+    var gate = p.id === "phase-3";
+    return '<div class="card searchable" id="' + p.id + '" data-idx-id="phase-' + p.id + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">' +
+      '<div><div style="font-weight:700;font-size:15px;">' + VIQ.escapeHtml(p.name) + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);">' + VIQ.escapeHtml(p.window) + '</div></div>' +
+      (gate ? '<span class="badge good">Release gate</span>' : '<span class="badge neutral">Phase ' + (i + 1) + '</span>') + '</div>' +
+      '<p style="font-size:12.5px;color:var(--muted);margin:10px 0 2px;"><b style="color:var(--text);">Builds:</b> ' + VIQ.escapeHtml(compNames(p.builds)) + '</p>' +
+      '<p class="phase-searchtext" style="font-size:13.5px;margin:8px 0 0;"><b>Proves:</b> ' + VIQ.escapeHtml(p.proves) + '</p></div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">5.1</span>Phases as a proportional timeline</h2>' +
+    '<p class="sub">Bar width is proportional to planned duration. The release gate is highlighted — day one ships only once it clears.</p>' +
+    '<div id="fig-timeline"></div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">5.2</span>Phase detail</h2>' +
+    '<div style="display:flex;flex-direction:column;gap:12px;">' + phases.map(phaseCard).join("") + '</div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">5.3</span>Gantt view</h2>' +
+    '<div id="fig-gantt"></div></div>';
+
+  VIQ.mountFigure("fig-timeline", {
+    title: "Build phases as a proportional timeline",
+    kind: "svg",
+    svg: VIQ.svg.timeline(),
+    interpretation: "Phase 3 is the make-or-break phase: it's where a working engine either does or doesn't read as trustworthy to a real job seeker, and it's the last thing that has to happen before day one ships."
+  });
+  VIQ.mountFigure("fig-gantt", {
+    title: "VendorIQ build order (Gantt)",
+    kind: "mermaid",
+    code: BLUEPRINT.buildOrder.ganttMermaid,
+    interpretation: BLUEPRINT.buildOrder.interpretation
+  });
+
+  VIQ.enablePageFilter(".searchable", ".phase-searchtext");
+  VIQ.mountAskPanel("ask-panel", "buildorder");
+})();
+</script>
+</body>
+</html>

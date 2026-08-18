@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Copy-Ready Prompts — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 4 of 8</div>
+    <h1 id="page-title">Copy-Ready Prompts</h1>
+    <p class="lede">Every prompt already names VendorIQ, so pasting it into Claude gets you an answer about your system, not a textbook.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("prompts");
+  var recs = STACK.recommendations;
+  document.getElementById("page-title").textContent = "Copy-Ready Prompts (" + recs.length + ")";
+
+  function row(r) {
+    return '<tr class="searchable" id="prompt-' + r.id + '" data-idx-id="rec-' + r.id + '">' +
+      '<td><div style="font-weight:700;">' + VIQ.escapeHtml(r.tech) + '</div><div style="font-size:11.5px;color:var(--muted);">' + VIQ.escapeHtml(r.component) + '</div></td>' +
+      '<td class="prompt-searchtext" style="max-width:520px;">' + VIQ.escapeHtml(r.prompt) + '</td>' +
+      '<td>' + VIQ.copyButtonHtml(r.prompt, "Copy") + '</td></tr>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">4.1</span>All prompts</h2>' +
+    '<div class="table-scroll"><table class="data-table"><thead><tr><th>Technology</th><th>Prompt</th><th></th></tr></thead><tbody>' +
+    recs.map(row).join("") + '</tbody></table></div></div>';
+
+  VIQ.enablePageFilter(".searchable", ".prompt-searchtext");
+  VIQ.wireCopyButtons(document);
+  VIQ.mountAskPanel("ask-panel", "prompts");
+})();
+</script>
+</body>
+</html>

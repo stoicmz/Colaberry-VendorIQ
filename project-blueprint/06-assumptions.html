@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Assumptions — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 6 of 7</div>
+    <h1 id="page-title">Assumptions</h1>
+    <p class="lede">What this design assumes about VendorIQ where the source paragraph didn't say — and what changes if any assumption turns out wrong.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("assumptions");
+  var items = BLUEPRINT.assumptions;
+  document.getElementById("page-title").textContent = "Assumptions (" + items.length + ")";
+
+  function row(a, i) {
+    return '<div class="assumption-row searchable" id="assumption-' + i + '" data-idx-id="assumption-' + i + '">' +
+      '<div><div class="a-label">Assumes</div><div class="a-text assump-searchtext">' + VIQ.escapeHtml(a.assumption) + '</div></div>' +
+      '<div><div class="a-label">Impact if wrong</div><div class="a-text">' + VIQ.escapeHtml(a.impact) + '</div></div></div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">6.1</span>Assumption ledger</h2>' +
+    '<p class="sub">Every gap in the source paragraph, filled in explicitly, side by side with the consequence of getting it wrong.</p>' +
+    '<div id="fig-ledger"></div></div>' +
+
+    '<div class="section-block card">' +
+    '<h2><span class="num">6.2</span>Assumptions and impact</h2>' +
+    items.map(row).join("") + '</div>';
+
+  VIQ.mountFigure("fig-ledger", {
+    title: "Assumptions and their impact if wrong",
+    kind: "svg",
+    svg: VIQ.svg.assumptionLedger(),
+    interpretation: "Two assumptions carry real weight if wrong — the proprietary-methodology boundary and the no-crowdsourcing boundary — because both would trigger a governance-level redesign, not a quick patch."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".assump-searchtext");
+  VIQ.mountAskPanel("ask-panel", "assumptions");
+})();
+</script>
+</body>
+</html>

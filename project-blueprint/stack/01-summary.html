@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Summary — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 1 of 8</div>
+    <h1>Summary</h1>
+    <p class="lede">What each rating means, and the one paragraph naming where this stack is most likely to break.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("summary");
+  var content = document.getElementById("page-content");
+
+  function keyRow(r) {
+    return '<div class="searchable" data-idx-id="rating-' + r.level + '" style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);">' +
+      '<span class="rating-pill ' + r.level + '">' + r.icon + ' ' + VIQ.escapeHtml(r.label) + '</span>' +
+      '<p class="key-searchtext" style="margin:0;font-size:13.6px;">' + VIQ.escapeHtml(r.meaning) + '</p></div>';
+  }
+
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">1.1</span>Fit-rating breakdown</h2>' +
+    '<p class="sub">If every rating came back green, this document would not have done its job. It hasn\'t.</p>' +
+    '<div id="fig-bar"></div></div>' +
+
+    '<div class="section-block card">' +
+    '<h2><span class="num">1.2</span>What each rating means</h2>' +
+    STACK.ratingKey.map(keyRow).join("") + '</div>' +
+
+    '<div class="section-block card searchable" data-idx-id="headline">' +
+    '<h2><span class="num">1.3</span>Headline: where this stack is most likely to break</h2>' +
+    '<p class="headline-searchtext" style="font-size:14.5px;">' + VIQ.escapeHtml(STACK.headline) + '</p></div>';
+
+  VIQ.mountFigure("fig-bar", {
+    title: "Fit ratings, proportionally",
+    kind: "svg",
+    svg: VIQ.svg.ratingBar(),
+    interpretation: "A third of these recommendations are flagged 🔴 — this stack is workable, but three specific decisions deserve a second look before you commit to them."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".key-searchtext, .headline-searchtext");
+  VIQ.mountAskPanel("ask-panel", "summary");
+})();
+</script>
+</body>
+</html>

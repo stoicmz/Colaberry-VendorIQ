@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How It Fits Together — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 3 of 7</div>
+    <h1>How It Fits Together</h1>
+    <p class="lede">The architecture diagram: every arrow is labelled with the data or action crossing it, from sign-in to a rendered dashboard.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("architecture");
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block searchable" data-idx-id="diagram">' +
+    '<h2><span class="num">3.1</span>Architecture diagram</h2>' +
+    '<p class="sub">Solid arrows are the day-one path. Dashed arrows are the deferred Phase 2 message-upload path.</p>' +
+    '<div id="fig-arch"></div></div>' +
+
+    '<div class="section-block card">' +
+    '<h2><span class="num">3.2</span>Reading the diagram</h2>' +
+    '<p style="font-size:13.6px;">Rectangles are services this blueprint defines. The cylinder is the one data store. The stadium shape is the entry point — the job seeker. The dashed subgraph is explicitly out of scope for day one. Full component descriptions are on the <a href="02-components.html">Components</a> page; the numbered walkthrough of this same path is on the <a href="04-dataflow.html">Data Flow</a> page.</p></div>';
+
+  VIQ.mountFigure("fig-arch", {
+    title: "VendorIQ system architecture",
+    kind: "mermaid",
+    code: BLUEPRINT.diagram.mermaid,
+    interpretation: BLUEPRINT.diagram.interpretation
+  });
+
+  VIQ.enablePageFilter(".searchable");
+  VIQ.mountAskPanel("ask-panel", "architecture");
+})();
+</script>
+</body>
+</html>

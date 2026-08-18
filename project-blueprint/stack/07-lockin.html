@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>How Hard To Undo — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 7 of 8</div>
+    <h1 id="page-title">How Hard To Undo</h1>
+    <p class="lede">A great fit today can still be a hard decision to reverse tomorrow — this page rates that separately from fit.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("lockin");
+  var recs = STACK.recommendations.filter(function (r) { return r.undo; });
+  document.getElementById("page-title").textContent = "How Hard To Undo (" + recs.length + ")";
+  var DIFF_BADGE = { easy: "good", moderate: "warn", hard: "risk" };
+  var DIFF_LABEL = { easy: "Easy", moderate: "Moderate", hard: "Hard" };
+
+  function row(r) {
+    return '<tr class="searchable" id="undo-' + r.id + '" data-idx-id="rec-' + r.id + '">' +
+      '<td><div style="font-weight:700;">' + VIQ.escapeHtml(r.tech) + '</div><div style="font-size:11.5px;color:var(--muted);">' + VIQ.escapeHtml(r.component) + '</div></td>' +
+      '<td><span class="badge ' + DIFF_BADGE[r.undo.difficulty] + '">' + DIFF_LABEL[r.undo.difficulty] + '</span></td>' +
+      '<td class="undo-searchtext">' + VIQ.escapeHtml(r.undo.reason) + '</td></tr>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">7.1</span>Lock-in scale</h2>' +
+    '<p class="sub">Where each decision sits between “swap it next week” and “this is a project of its own.”</p>' +
+    '<div id="fig-scale"></div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">7.2</span>Every decision, rated</h2>' +
+    '<div class="table-scroll"><table class="data-table"><thead><tr><th>Technology</th><th>Difficulty</th><th>Why</th></tr></thead><tbody>' +
+    recs.map(row).join("") + '</tbody></table></div></div>';
+
+  VIQ.mountFigure("fig-scale", {
+    title: "How hard each decision is to undo",
+    kind: "svg",
+    svg: VIQ.svg.lockinScale(),
+    interpretation: "The database and the backend framework are your two hardest-to-reverse bets — both are also rated green for fit, which is exactly the combination you want: commit hard only to the things least likely to need reversing."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".undo-searchtext");
+  VIQ.mountAskPanel("ask-panel", "lockin");
+})();
+</script>
+</body>
+</html>

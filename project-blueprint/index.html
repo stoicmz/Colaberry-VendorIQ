@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VendorIQ — Project Blueprint Command Center</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <div class="cc-hero">
+    <div class="page-header eyebrow">Project Blueprint</div>
+    <h1>VendorIQ Command Center</h1>
+    <p id="tagline">Loading…</p>
+  </div>
+
+  <div class="cc-grid" id="cc-grid" role="list"></div>
+
+  <div class="section-block card" style="margin-top:28px;">
+    <h2>What is VendorIQ?</h2>
+    <p class="sub">The one-paragraph idea this whole blueprint is derived from.</p>
+    <p id="idea-text" style="font-size:14.5px;"></p>
+    <p style="font-size:12.5px;color:var(--muted);">Open <a href="01-summary.html">The Idea</a> for the full breakdown, or use search above once a page loads.</p>
+  </div>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("index");
+  document.getElementById("tagline").textContent = BLUEPRINT.meta.tagline;
+  document.getElementById("idea-text").textContent = BLUEPRINT.idea.paragraph;
+
+  var edgeCount = (BLUEPRINT.diagram.mermaid.match(/[-.]{2,}>/g) || []).length;
+  var deferredCount = BLUEPRINT.components.filter(function (c) { return c.category === "deferred"; }).length;
+
+  var tiles = [
+    {
+      href: "01-summary.html", art: VIQ.tileArt.idea(), title: "1. The Idea",
+      desc: "The source paragraph, the day-one guarantee sentence, and the proprietary-methodology scope note.",
+      count: "1 paragraph · 1 guarantee"
+    },
+    {
+      href: "02-components.html", art: VIQ.tileArt.components(), title: "2. Components",
+      desc: "Every component VendorIQ needs, traced back to the exact words that required it.",
+      count: BLUEPRINT.components.length + " components · " + deferredCount + " deferred"
+    },
+    {
+      href: "03-architecture.html", art: VIQ.tileArt.nodeGraph(), title: "3. How It Fits Together",
+      desc: "The architecture diagram: how a logged interaction becomes an always-current behavior pattern.",
+      count: edgeCount + " connections"
+    },
+    {
+      href: "04-dataflow.html", art: VIQ.tileArt.flow(), title: "4. Data Flow",
+      desc: "A numbered, step-by-step walkthrough from sign-in to a rendered dashboard.",
+      count: BLUEPRINT.dataFlow.steps.length + " steps"
+    },
+    {
+      href: "05-buildorder.html", art: VIQ.tileArt.phases(), title: "5. Build Order",
+      desc: "What gets built first, and what each phase proves before the next one starts.",
+      count: BLUEPRINT.buildOrder.phases.length + " phases"
+    },
+    {
+      href: "06-assumptions.html", art: VIQ.tileArt.assumptions(), title: "6. Assumptions",
+      desc: "What this design assumes about VendorIQ, and the impact if any assumption is wrong.",
+      count: BLUEPRINT.assumptions.length + " assumptions"
+    },
+    {
+      href: "07-coverage.html", art: VIQ.tileArt.grid(), title: "7. Coverage & Open Question",
+      desc: "What this design covers, what it honestly doesn't, and the one question that would reshape it.",
+      count: BLUEPRINT.coverage.covered.length + " covered · " + BLUEPRINT.coverage.notCovered.length + " not covered"
+    }
+  ];
+
+  var grid = document.getElementById("cc-grid");
+  grid.innerHTML = tiles.map(function (t) {
+    return '<a class="tile" role="listitem" href="' + t.href + '">' +
+      '<div class="tile-art">' + t.art + '</div>' +
+      '<div class="tile-body"><div class="tile-title">' + t.title + '</div>' +
+      '<div class="tile-desc">' + t.desc + '</div>' +
+      '<div class="tile-count">' + t.count + '</div></div></a>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

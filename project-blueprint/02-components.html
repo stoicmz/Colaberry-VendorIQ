@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Components — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 2 of 7</div>
+    <h1 id="page-title">Components</h1>
+    <p class="lede">Every component this idea actually needs — each one traced back to the specific words that required it. No padding.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("components");
+  var comps = BLUEPRINT.components;
+  var dayOne = comps.filter(function (c) { return c.category === "day-one"; });
+  var deferred = comps.filter(function (c) { return c.category === "deferred"; });
+  document.getElementById("page-title").textContent = "Components (" + comps.length + ")";
+
+  function card(c) {
+    return '<div class="comp-card searchable" id="' + c.id + '" data-idx-id="comp-' + c.id + '">' +
+      '<div class="comp-head"><div class="comp-name">' + VIQ.escapeHtml(c.name) + '</div>' +
+      '<span class="layer-chip layer-' + c.layer + '">' + c.layer + '</span></div>' +
+      (c.phase ? '<span class="badge warn">' + VIQ.escapeHtml(c.phase) + '</span>' : '<span class="badge good">Day one</span>') +
+      '<p class="comp-summary comp-searchtext">' + VIQ.escapeHtml(c.summary) + '</p>' +
+      '<div class="comp-words"><b>Required by:</b> ' + c.words.map(VIQ.escapeHtml).join(" · ") + '</div>' +
+      (c.note ? '<div class="comp-words">' + VIQ.escapeHtml(c.note) + '</div>' : '') +
+      '</div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">2.1</span>Components grouped by layer</h2>' +
+    '<p class="sub">The real component names, placed in the layer they belong to. Dashed = deferred to Phase 2.</p>' +
+    '<div id="fig-layers"></div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">2.2</span>Day-one components (' + dayOne.length + ')</h2>' +
+    '<p class="sub">Required to satisfy the day-one guarantee sentence.</p>' +
+    '<div class="comp-grid">' + dayOne.map(card).join("") + '</div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">2.3</span>Deferred components (' + deferred.length + ')</h2>' +
+    '<p class="sub">Explicitly named as future/optional in the source paragraph — not required to ship day one.</p>' +
+    '<div class="comp-grid">' + deferred.map(card).join("") + '</div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">2.4</span>Full table</h2>' +
+    '<div class="table-scroll"><table class="data-table"><thead><tr><th>Component</th><th>Layer</th><th>Status</th><th>What it does</th></tr></thead><tbody>' +
+    comps.map(function (c) {
+      return '<tr><td><a href="#' + c.id + '">' + VIQ.escapeHtml(c.name) + '</a></td><td><span class="layer-chip layer-' + c.layer + '">' + c.layer + '</span></td>' +
+        '<td>' + (c.category === "day-one" ? '<span class="badge good">Day one</span>' : '<span class="badge warn">Deferred</span>') + '</td>' +
+        '<td>' + VIQ.escapeHtml(c.summary) + '</td></tr>';
+    }).join("") + '</tbody></table></div></div>';
+
+  VIQ.mountFigure("fig-layers", {
+    title: "Components grouped into layers",
+    kind: "svg",
+    svg: VIQ.svg.layers(),
+    interpretation: "Five thin layers, not a monolith — each layer has exactly the components its job requires, and the AI layer only appears in the deferred (dashed) Phase 2 cluster."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".comp-searchtext");
+  VIQ.mountAskPanel("ask-panel", "components");
+})();
+</script>
+</body>
+</html>

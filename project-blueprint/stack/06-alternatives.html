@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Alternatives Considered — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 6 of 8</div>
+    <h1 id="page-title">Alternatives Considered</h1>
+    <p class="lede">What else was on the table for each recommendation, and specifically why it lost — for VendorIQ, not in general.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("alternatives");
+  var recs = STACK.recommendations;
+  document.getElementById("page-title").textContent = "Alternatives Considered (" + recs.length + ")";
+
+  function row(r) {
+    return '<tr class="searchable" id="alt-' + r.id + '" data-idx-id="rec-' + r.id + '">' +
+      '<td><div style="font-weight:700;">' + VIQ.escapeHtml(r.tech) + '</div><div style="font-size:11.5px;color:var(--muted);">' + VIQ.escapeHtml(r.component) + '</div></td>' +
+      '<td><span class="badge neutral">' + VIQ.escapeHtml(r.alternative.name) + '</span></td>' +
+      '<td class="alt-searchtext">' + VIQ.escapeHtml(r.alternative.whyNot) + '</td></tr>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">6.1</span>Chosen vs. considered</h2>' +
+    '<div class="table-scroll"><table class="data-table"><thead><tr><th>Chosen technology</th><th>Alternative considered</th><th>Why not</th></tr></thead><tbody>' +
+    recs.map(row).join("") + '</tbody></table></div></div>';
+
+  VIQ.enablePageFilter(".searchable", ".alt-searchtext");
+  VIQ.mountAskPanel("ask-panel", "alternatives");
+})();
+</script>
+</body>
+</html>

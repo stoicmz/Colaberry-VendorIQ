@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VendorIQ — Tech Stack Command Center</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <div class="cc-hero">
+    <div class="page-header eyebrow">Tech Stack</div>
+    <h1>VendorIQ Stack Command Center</h1>
+    <p id="tagline">Loading…</p>
+  </div>
+
+  <div class="cc-grid" id="cc-grid" role="list"></div>
+
+  <div class="section-block card" style="margin-top:28px;">
+    <h2>How to read this</h2>
+    <p style="font-size:13.6px;">One real technology per component from <a href="../index.html">the architecture</a>, each rated 🟢/🟡/🔴 against VendorIQ's actual scale — not against what's popular. If every rating came back green, this document would have failed at its job; it doesn't.</p>
+  </div>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("index");
+  document.getElementById("tagline").textContent = STACK.meta.tagline;
+
+  var counts = { green: 0, amber: 0, red: 0 };
+  STACK.recommendations.forEach(function (r) { counts[r.rating]++; });
+  var byGroupFlow = STACK.recommendations.filter(function (r) { return r.group === "flow"; }).length;
+
+  var tiles = [
+    { href: "01-summary.html", art: VIQ.tileArt.bar(), title: "1. Summary", desc: "The fit-rating key, and the one paragraph naming where this stack is most likely to break.", count: counts.green + "🟢 " + counts.amber + "🟡 " + counts.red + "🔴" },
+    { href: "02-recommendations.html", art: VIQ.tileArt.bands(), title: "2. Recommendations", desc: "One technology per architecture component, grouped by what a person touches, writes, and stores.", count: (STACK.recommendations.length - byGroupFlow) + " recommendations" },
+    { href: "03-dataflow-needs.html", art: VIQ.tileArt.topology(), title: "3. What The Data Flow Needs", desc: "Technology the data flow clearly requires that the component list never named.", count: byGroupFlow + " from the flow" },
+    { href: "04-prompts.html", art: VIQ.tileArt.prompts(), title: "4. Copy-Ready Prompts", desc: "Every prompt collected in one table, each with a working copy button.", count: STACK.recommendations.length + " prompts" },
+    { href: "05-learning-path.html", art: VIQ.tileArt.ladder(), title: "5. What To Learn First", desc: "The order to learn these technologies in, and why that order.", count: STACK.learningOrder.length + " steps" },
+    { href: "06-alternatives.html", art: VIQ.tileArt.bands(), title: "6. Alternatives Considered", desc: "What else was on the table for each recommendation, and why it lost.", count: STACK.recommendations.length + " alternatives" },
+    { href: "07-lockin.html", art: VIQ.tileArt.scale(), title: "7. How Hard To Undo", desc: "Where you're locked in, and where you're not.", count: STACK.recommendations.filter(function(r){return r.undo;}).length + " rated" },
+    { href: "08-appendix.html", art: VIQ.tileArt.appendix(), title: "8. Appendix", desc: "What this document does NOT tell you, plus the full component-coverage check.", count: STACK.notCovered.length + " not covered" }
+  ];
+
+  var grid = document.getElementById("cc-grid");
+  grid.innerHTML = tiles.map(function (t) {
+    return '<a class="tile" role="listitem" href="' + t.href + '">' +
+      '<div class="tile-art">' + t.art + '</div>' +
+      '<div class="tile-body"><div class="tile-title">' + t.title + '</div>' +
+      '<div class="tile-desc">' + t.desc + '</div>' +
+      '<div class="tile-count">' + t.count + '</div></div></a>';
+  }).join("");
+})();
+</script>
+</body>
+</html>

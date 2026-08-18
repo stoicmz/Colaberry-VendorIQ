@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coverage & Open Question — VendorIQ Blueprint</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 7 of 7</div>
+    <h1>Coverage & Open Question</h1>
+    <p class="lede">What this design covers, what it honestly doesn't, a structural coverage grid, and the one open question that would most reshape it.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/blueprint.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("coverage");
+  var cov = BLUEPRINT.coverage;
+  var oq = BLUEPRINT.openQuestion;
+
+  function list(items, prefix) {
+    return '<ul style="padding-left:18px;display:flex;flex-direction:column;gap:8px;margin:0;">' +
+      items.map(function (t, i) {
+        return '<li class="searchable" id="' + prefix + '-' + i + '" data-idx-id="' + prefix + '-' + i + '"><span class="cov-searchtext" style="font-size:13.6px;">' + VIQ.escapeHtml(t) + '</span></li>';
+      }).join("") + '</ul>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">7.1</span>Coverage grid</h2>' +
+    '<p class="sub">Every day-one component, checked against four structural questions — not a fabricated metric, just what\'s true of each component as designed.</p>' +
+    '<div id="fig-grid"></div></div>' +
+
+    '<div class="two-col section-block">' +
+    '<div class="card" id="covered"><h2 style="font-size:15px;"><span class="badge good">Covered</span></h2>' + list(cov.covered, "cov-yes") + '</div>' +
+    '<div class="card" id="notcovered"><h2 style="font-size:15px;"><span class="badge risk">Not covered</span></h2>' + list(cov.notCovered, "cov-no") + '</div>' +
+    '</div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">7.2</span>The open question</h2>' +
+    '<p class="sub">The one question that would most change this design, and what changes under each answer.</p>' +
+    '<div id="fig-fork"></div></div>' +
+
+    '<div class="section-block card searchable" id="open-question" data-idx-id="open-question">' +
+    '<div style="font-weight:700;font-size:14.5px;">' + VIQ.escapeHtml(oq.question) + '</div>' +
+    '<div class="two-col" style="margin-top:12px;">' +
+    '<div><span class="badge neutral">' + VIQ.escapeHtml(oq.branchA.label) + '</span><p class="oq-searchtext" style="font-size:13.4px;margin-top:8px;">' + VIQ.escapeHtml(oq.branchA.consequence) + '</p></div>' +
+    '<div><span class="badge info">' + VIQ.escapeHtml(oq.branchB.label) + '</span><p style="font-size:13.4px;margin-top:8px;">' + VIQ.escapeHtml(oq.branchB.consequence) + '</p></div>' +
+    '</div></div>';
+
+  VIQ.mountFigure("fig-grid", {
+    title: "Coverage grid",
+    kind: "svg",
+    svg: VIQ.svg.coverageGrid(),
+    interpretation: "Every component either persists data or doesn't, is user-facing or isn't — read down a column to see, at a glance, exactly which pieces of the system carry state, face the user, or touch AI."
+  });
+  VIQ.mountFigure("fig-fork", {
+    title: "Open question: two branches",
+    kind: "svg",
+    svg: VIQ.svg.fork(),
+    interpretation: "Staying proprietary keeps the Engine simple to iterate on; becoming auditable adds a real, user-facing explainability surface — this is a strategic choice, not an implementation detail, so it belongs on this page rather than being decided here."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".cov-searchtext, .oq-searchtext");
+  VIQ.mountAskPanel("ask-panel", "coverage");
+})();
+</script>
+</body>
+</html>

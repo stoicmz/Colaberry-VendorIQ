@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What To Learn First — VendorIQ Tech Stack</title>
+<link rel="stylesheet" href="assets/site.css" />
+</head>
+<body>
+<main id="main" class="shell">
+  <nav id="breadcrumbs" class="breadcrumbs"></nav>
+  <div class="page-header">
+    <div class="eyebrow">Section 5 of 8</div>
+    <h1 id="page-title">What To Learn First</h1>
+    <p class="lede">The order to learn these technologies in, and the reason for that specific order — not just a shuffled list.</p>
+  </div>
+
+  <div id="page-content"></div>
+
+  <div class="section-block" id="ask-panel"></div>
+  <nav id="footer-nav" class="page-footer-nav"></nav>
+</main>
+
+<script src="assets/stack.js"></script>
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  VIQ.initPage("learning-path");
+  var steps = STACK.learningOrder.slice().sort(function (a, b) { return a.order - b.order; });
+  document.getElementById("page-title").textContent = "What To Learn First (" + steps.length + " steps)";
+
+  function stepRow(s) {
+    return '<div class="card searchable" id="order-' + s.order + '" data-idx-id="learn-' + s.order + '" style="display:flex;gap:14px;align-items:flex-start;">' +
+      '<div style="min-width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:flex;align-items:center;justify-content:center;font-weight:800;">' + s.order + '</div>' +
+      '<div><div style="font-weight:700;font-size:14px;">' + VIQ.escapeHtml(s.tech) + '</div>' +
+      '<p class="learn-searchtext" style="margin:4px 0 0;font-size:13.4px;">' + VIQ.escapeHtml(s.reason) + '</p></div></div>';
+  }
+
+  var content = document.getElementById("page-content");
+  content.innerHTML =
+    '<div class="section-block">' +
+    '<h2><span class="num">5.1</span>The learning ladder</h2>' +
+    '<p class="sub">Each rung depends on the one below it actually working.</p>' +
+    '<div id="fig-ladder"></div></div>' +
+
+    '<div class="section-block">' +
+    '<h2><span class="num">5.2</span>Why this order</h2>' +
+    '<div style="display:flex;flex-direction:column;gap:10px;">' + steps.map(stepRow).join("") + '</div></div>';
+
+  VIQ.mountFigure("fig-ladder", {
+    title: "Learning ladder, in order",
+    kind: "svg",
+    svg: VIQ.svg.learningLadder(),
+    interpretation: "Each step indents further than the last because it genuinely depends on everything above it — there's no shortcut to step 4 without steps 1 through 3 already working."
+  });
+
+  VIQ.enablePageFilter(".searchable", ".learn-searchtext");
+  VIQ.mountAskPanel("ask-panel", "learning-path");
+})();
+</script>
+</body>
+</html>
