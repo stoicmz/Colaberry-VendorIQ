@@ -1,36 +1,590 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
+  "project": "VendorIQ",
+  "totals": {
+    "stories_total": 15,
+    "stories_verified": 1,
+    "stories_submitted": 0,
+    "stories_in_progress": 14,
+    "stories_not_started": 0,
+    "criteria_total": 47,
+    "criteria_passed": 5,
+    "points_awarded": 53
+  },
   "stories": [
     {
       "id": "STORY-000",
+      "release": null,
+      "acceptance_total": 5,
       "criteria": [
-        { "text": "Given the Command Center, when it is opened, then every tab is reachable and every card drills down one level.", "passed": true },
-        { "text": "Given sample mode, when any tab is shown, then the sample data is visibly labelled as sample.", "passed": true },
-        { "text": "Given the data files, when any tab renders, then its content comes from .colaberry/plan.json and .colaberry/progress.json read at runtime rather than from hard-coded values.", "passed": true },
-        { "text": "Given .colaberry/manifest.json, when any tab is shown, then it displays how old the data is and warns when that age exceeds a week.", "passed": true },
-        { "text": "Trust — no tab shows a number, a connection or a result the project has not actually produced.", "passed": true }
-      ]
+        {
+          "text": "Given the Command Center, when it is opened, then every tab is reachable and every card drills down one level.",
+          "passed": true
+        },
+        {
+          "text": "Given sample mode, when any tab is shown, then the sample data is visibly labelled as sample.",
+          "passed": true
+        },
+        {
+          "text": "Given the Command Center, when any tab renders, then .colaberry/plan.json and .colaberry/progress.json are both committed in this repo and every tab reads its content from them at runtime rather than from hard-coded values.",
+          "passed": true
+        },
+        {
+          "text": "Given the Command Center, when any tab is shown, then .colaberry/manifest.json is committed in this repo and every tab shows how old that data is and warns when the age exceeds a week.",
+          "passed": true
+        },
+        {
+          "text": "Trust — no tab shows a number, a connection or a result the project has not actually produced.",
+          "passed": true
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "verified",
+        "criteria_passed": 5,
+        "criteria_total": 5,
+        "verified_at": "2026-08-20T00:29:06.214Z",
+        "commit_sha": "321c8e0965aab172f2beba5f2d61478c6f9c6a10",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/321c8e0965aab172f2beba5f2d61478c6f9c6a10",
+        "commit_at": "2026-08-18T00:53:42Z",
+        "points_awarded": 53,
+        "outstanding": []
+      }
     },
-    { "id": "STORY-001", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-002", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-003", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-004", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-005", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-006", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-007", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-008", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-009", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-010", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-011", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-012", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-013", "verification": { "state": "not_started", "commit": null, "points": 0 } },
-    { "id": "STORY-014", "verification": { "state": "not_started", "commit": null, "points": 0 } }
-  ],
-  "totals": {
-    "stories_total": 14,
-    "stories_verified": 0,
-    "criteria_total": 0,
-    "criteria_passed": 0,
-    "points_awarded": 0
-  }
+    {
+      "id": "STORY-001",
+      "release": "r0",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
+          "passed": false
+        },
+        {
+          "text": "Given an invalid file format, when I attempt to upload, then I receive an error message.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Data ingestion is logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
+          "Given an invalid file format, when I attempt to upload, then I receive an error message.",
+          "Trust: Data ingestion is logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-002",
+      "release": "r0",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a job seeker is logged in, when they navigate to the dashboard, then they see a list of recruiter interactions.",
+          "passed": false
+        },
+        {
+          "text": "Given a job seeker clicks on a recruiter interaction, when they view the details, then it loads within three clicks.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every interaction detail view is logged with a timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a job seeker is logged in, when they navigate to the dashboard, then they see a list of recruiter interactions.",
+          "Given a job seeker clicks on a recruiter interaction, when they view the details, then it loads within three clicks.",
+          "Trust: Every interaction detail view is logged with a timestamp."
+        ]
+      }
+    },
+    {
+      "id": "STORY-003",
+      "release": "r0",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a set of recruiter interaction data, when I manually review the data, then I can confirm the data is accurately attributed to the correct recruiter.",
+          "passed": false
+        },
+        {
+          "text": "Given a data entry with incorrect attribution, when I identify and correct it, then the system updates the attribution correctly.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every manual correction is logged with the reviewer ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a set of recruiter interaction data, when I manually review the data, then I can confirm the data is accurately attributed to the correct recruiter.",
+          "Given a data entry with incorrect attribution, when I identify and correct it, then the system updates the attribution correctly.",
+          "Trust: Every manual correction is logged with the reviewer ID and timestamp."
+        ]
+      }
+    },
+    {
+      "id": "STORY-004",
+      "release": "r1",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given ingested data, when red flags are identified, then they are highlighted on the dashboard.",
+          "passed": false
+        },
+        {
+          "text": "Given no red flags, when I view the dashboard, then no highlights are shown.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Red flag identification is logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given ingested data, when red flags are identified, then they are highlighted on the dashboard.",
+          "Given no red flags, when I view the dashboard, then no highlights are shown.",
+          "Trust: Red flag identification is logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-005",
+      "release": "r1",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given uncertain data, when it is flagged, then I am notified for manual review.",
+          "passed": false
+        },
+        {
+          "text": "Given certain data, when I view it, then no flag is shown.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Flagging actions are logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given uncertain data, when it is flagged, then I am notified for manual review.",
+          "Given certain data, when I view it, then no flag is shown.",
+          "Trust: Flagging actions are logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-006",
+      "release": "r2",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given ingested data, when I view the dashboard, then I see message frequency and timestamps.",
+          "passed": false
+        },
+        {
+          "text": "Given missing data, when I view the dashboard, then I see a message indicating incomplete data.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Display actions are logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given ingested data, when I view the dashboard, then I see message frequency and timestamps.",
+          "Given missing data, when I view the dashboard, then I see a message indicating incomplete data.",
+          "Trust: Display actions are logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-007",
+      "release": "r2",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given displayed data, when I view explanations, then I understand the data context.",
+          "passed": false
+        },
+        {
+          "text": "Given unclear data, when I view explanations, then I see a message indicating further review is needed.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Explanation access is logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given displayed data, when I view explanations, then I understand the data context.",
+          "Given unclear data, when I view explanations, then I see a message indicating further review is needed.",
+          "Trust: Explanation access is logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-008",
+      "release": "r3",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a trial period, when users provide feedback, then it is collected and stored.",
+          "passed": false
+        },
+        {
+          "text": "Given no feedback, when the trial ends, then I see a report indicating no feedback was received.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Feedback collection is logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a trial period, when users provide feedback, then it is collected and stored.",
+          "Given no feedback, when the trial ends, then I see a report indicating no feedback was received.",
+          "Trust: Feedback collection is logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-009",
+      "release": "r3",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given collected feedback, when it is positive, then I confirm system reliability.",
+          "passed": false
+        },
+        {
+          "text": "Given negative feedback, when I review it, then I identify areas for improvement.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Feedback analysis is logged for audit purposes.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given collected feedback, when it is positive, then I confirm system reliability.",
+          "Given negative feedback, when I review it, then I identify areas for improvement.",
+          "Trust: Feedback analysis is logged for audit purposes."
+        ]
+      }
+    },
+    {
+      "id": "STORY-010",
+      "release": "r4",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given manual reviews, when they are logged, then I can access the log for audit purposes.",
+          "passed": false
+        },
+        {
+          "text": "Given no reviews, when I access the log, then I see a message indicating no reviews are logged.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Log access is restricted to authorized personnel.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given manual reviews, when they are logged, then I can access the log for audit purposes.",
+          "Given no reviews, when I access the log, then I see a message indicating no reviews are logged.",
+          "Trust: Log access is restricted to authorized personnel."
+        ]
+      }
+    },
+    {
+      "id": "STORY-011",
+      "release": "r1",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a dataset, when I review it manually, then I can identify and correct incomplete or incorrect data entries.",
+          "passed": false
+        },
+        {
+          "text": "Given a data entry that is flagged as incomplete, when I complete it, then the system updates the entry accordingly.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every manual review action is logged with the reviewer ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a dataset, when I review it manually, then I can identify and correct incomplete or incorrect data entries.",
+          "Given a data entry that is flagged as incomplete, when I complete it, then the system updates the entry accordingly.",
+          "Trust: Every manual review action is logged with the reviewer ID and timestamp."
+        ]
+      }
+    },
+    {
+      "id": "STORY-012",
+      "release": "r2",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a recruiter interaction, when I view the interaction details, then I can see whether a reply occurred.",
+          "passed": false
+        },
+        {
+          "text": "Given an interaction without a reply, when I view the details, then it clearly indicates no reply was made.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every interaction view logs the user ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a recruiter interaction, when I view the interaction details, then I can see whether a reply occurred.",
+          "Given an interaction without a reply, when I view the details, then it clearly indicates no reply was made.",
+          "Trust: Every interaction view logs the user ID and timestamp."
+        ]
+      }
+    },
+    {
+      "id": "STORY-013",
+      "release": "r2",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a recruiter's interaction history, when I view it, then I can see patterns of responsiveness and follow-up.",
+          "passed": false
+        },
+        {
+          "text": "Given a recruiter with no follow-up, when I view their history, then it clearly indicates lack of follow-up.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every pattern view logs the user ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a recruiter's interaction history, when I view it, then I can see patterns of responsiveness and follow-up.",
+          "Given a recruiter with no follow-up, when I view their history, then it clearly indicates lack of follow-up.",
+          "Trust: Every pattern view logs the user ID and timestamp."
+        ]
+      }
+    },
+    {
+      "id": "STORY-014",
+      "release": "r0",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a dataset for ingestion, when I run the cleaning process, then the system removes or corrects invalid data entries.",
+          "passed": false
+        },
+        {
+          "text": "Given a dataset with missing fields, when I run the cleaning process, then the system flags entries with missing fields for review.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every cleaning action is logged with the administrator ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given a dataset for ingestion, when I run the cleaning process, then the system removes or corrects invalid data entries.",
+          "Given a dataset with missing fields, when I run the cleaning process, then the system flags entries with missing fields for review.",
+          "Trust: Every cleaning action is logged with the administrator ID and timestamp."
+        ]
+      }
+    }
+  ]
 }
