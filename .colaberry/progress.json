@@ -3,13 +3,13 @@
   "project": "VendorIQ",
   "totals": {
     "stories_total": 15,
-    "stories_verified": 1,
+    "stories_verified": 2,
     "stories_submitted": 0,
-    "stories_in_progress": 14,
+    "stories_in_progress": 13,
     "stories_not_started": 0,
     "criteria_total": 47,
-    "criteria_passed": 5,
-    "points_awarded": 53
+    "criteria_passed": 8,
+    "points_awarded": 106
   },
   "stories": [
     {
@@ -100,19 +100,15 @@
       "notes": "Persistence (SQLite via Sequelize) and audit logging added on top of the existing schema/parser/validator work. Ingestion now persists directly (IngestionBatch + RecruiterInteractionRecord) rather than deferring to a normalization stage, since none exists yet and STORY-002 needs the data to survive across requests — documented as a deliberate amendment in directives/vendor_ingestion_stage.md and docs/ARCHITECTURE.md. Idempotency dedup key is the uploaded file's SHA-256 hash (translated from CLAUDE.md's vendor_id/source/file_hash convention, which doesn't map to this recruiter-interaction schema). Every outcome (success, duplicate, rejected) writes an IngestionAuditLog row with a per-request correlationId echoed back in the HTTP response. 47/47 backend tests passing; tsc --noEmit clean.",
       "updated_at": "2026-09-08T00:00:00.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
-          "Given an invalid file format, when I attempt to upload, then I receive an error message.",
-          "Trust: Data ingestion is logged for audit purposes."
-        ]
+        "verified_at": "2026-09-09T01:30:41.289Z",
+        "commit_sha": "cee30870507ce1d3d0d65cf14a0065026236f67e",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/cee30870507ce1d3d0d65cf14a0065026236f67e",
+        "commit_at": "2026-09-09T01:25:00Z",
+        "points_awarded": 53,
+        "outstanding": []
       }
     },
     {
