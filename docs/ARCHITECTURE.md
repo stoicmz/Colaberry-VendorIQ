@@ -63,17 +63,19 @@ No `.ts`/`.js`/config files exist yet — every leaf here is documentation (`REA
 
 | Artifact | Path | Status |
 |---|---|---|
-| Directive (SOP) | `directives/vendor_ingestion_stage.md` | Built |
-| Zod schema/contract | `backend/src/services/vendorIngestion/vendorIngestionSchema.ts` | Not built — planned |
-| Format parser | `backend/src/services/vendorIngestion/vendorIngestionParser.ts` | Not built — planned |
-| Orchestration service | `backend/src/services/vendorIngestion/vendorIngestionService.ts` | Not built — planned |
-| Unit tests | `backend/src/services/vendorIngestion/vendorIngestionService.test.ts` | Not built — planned |
-| HTTP route (if HTTP-triggered) | `backend/src/routes/vendorIngestionRoutes.ts` | Not built — trigger mechanism (HTTP vs script) unconfirmed |
-| Persistence model (if persisted) | `backend/src/models/VendorIngestionRecord.ts` | Not built — persistence need unconfirmed |
+| Directive (SOP) | `directives/vendor_ingestion_stage.md` | Built; amended 2026-09-08 for the persistence decision below |
+| Zod schema/contract | `backend/src/services/vendorIngestion/vendorIngestionSchema.ts` | Built (STORY-001) |
+| Format parsers | `vendorIngestionCsvParser.ts`, `vendorIngestionXlsxParser.ts` | Built (STORY-001). JSON/form-payload adapters not built. |
+| Row validator | `vendorIngestionRowValidator.ts` | Built (STORY-001) |
+| Orchestration service | `vendorIngestionService.ts` | Built (STORY-001) — hashing, dedup lookup, parse dispatch, persistence |
+| Unit tests | `*.test.ts` alongside each module above | Built (STORY-001) |
+| HTTP route | `backend/src/routes/vendorIngestionRoutes.ts` | Built (STORY-001) — `POST /upload`, multer, extension check |
+| Persistence models | `backend/src/models/VendorIngestionRecord.ts` (`IngestionBatch`, `RecruiterInteractionRecord`) | Built (STORY-001) — SQLite via Sequelize, no migration tooling yet (`sequelize.sync()`) |
+| Audit logging | — | Not yet built (STORY-001, in progress) |
 
 ## Open items for next approval cycle
 
-1. Confirm whether `vendor_ingestion_stage` is HTTP-triggered (upload endpoint) or file-drop/script-triggered — determines whether `vendorIngestionRoutes.ts` or a `backend/src/scripts/` entry point is built first.
-2. Confirm whether validated records persist (needs `VendorIngestionRecord.ts` + a migration in `backend/src/seeds/`) or the stage is pure pass-through to a downstream normalization stage.
+1. ~~Confirm whether `vendor_ingestion_stage` is HTTP-triggered~~ — resolved: HTTP upload endpoint (`POST /api/vendor-ingestion/upload`), built STORY-001.
+2. ~~Confirm whether validated records persist~~ — resolved 2026-09-08: yes, ingestion persists directly (`VendorIngestionRecord.ts`) since no normalization stage exists yet and STORY-002 needs the data to survive across requests. No migration in `backend/src/seeds/` yet — `sequelize.sync()` is a walking-skeleton stand-in; revisit once the schema stabilizes.
 3. `Telemetry Synchronization Contract` (`BuildManifest` emission, CLAUDE.md L26-30) was not invoked for this change — there is no running backend/portal endpoint yet to receive it. Revisit once `/api/portal/project/telemetry` exists at runtime.
 4. `git init` — this repo has no version control yet. Recommend doing this before any code lands, but not done here since it wasn't requested.

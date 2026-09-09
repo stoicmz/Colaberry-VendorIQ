@@ -2,7 +2,9 @@
 
 ## Goal
 
-Ingest raw vendor data (file upload, form submission, JSON payload, CSV) and validate it against the expected schema before it is handed to a downstream normalization stage. This is a pipeline stage, not a full pipeline — it does not normalize, score, or persist anything beyond what's needed to prove validity.
+Ingest raw vendor data (file upload, form submission, JSON payload, CSV) and validate it against the expected schema before it is handed to a downstream normalization stage. This is a pipeline stage, not a full pipeline — it does not normalize or score.
+
+**Amended 2026-09-08 (STORY-001):** this stage now also persists validated records (`IngestionBatch` + `RecruiterInteractionRecord`, `backend/src/models/VendorIngestionRecord.ts`). No normalization stage exists yet, and STORY-002 (dashboard display) needs ingested data to survive across requests, so ingestion is the practical persistence point until that stage is built. Revisit this note once a normalization stage exists — persistence may move there instead of being duplicated.
 
 ## Scope / Non-Goals
 
@@ -21,7 +23,7 @@ Exact field-level schema (required vendor attributes, types, formats) is TBD at 
 
 ## Outputs
 
-- Success: a validated, schema-conformant record handed to the normalization stage (interface TBD, owned by that stage).
+- Success: a validated, schema-conformant record persisted (`RecruiterInteractionRecord`, linked to its `IngestionBatch`) and returned to the caller. Handoff to a future normalization stage is still TBD, owned by that stage.
 - Failure: a structured rejection (which field failed, why) returned to the caller — never a silent drop.
 
 ## Validation Rules
@@ -44,6 +46,8 @@ Exact field-level schema (required vendor attributes, types, formats) is TBD at 
 
 Required mechanism (per CLAUDE.md → Idempotency & Replayability, NON-NEGOTIABLE): dedup key on `(vendor_id, source, file_hash)` — or `(vendor_id, source, batch_id)` if no stable file hash is available — checked before any side effect (persistence or forwarding to normalization) fires. Re-running ingestion on the same file/batch must not produce duplicate downstream records.
 
+**As implemented:** this schema has no `vendor_id`/`source` concept (it's recruiter-interaction data, not vendor data — those field names look inherited from a template this directive was drafted from). The dedup key actually used is the uploaded file's own SHA-256 content hash, stored as `IngestionBatch.fileHash` (unique). A re-submitted file with identical bytes returns the original batch instead of inserting new rows.
+
 ## Failure-First Design
 
 1. **What happens if this fails?** The submission is rejected with a structured error (field-level detail); nothing is forwarded downstream; nothing partially persists.
@@ -59,4 +63,4 @@ Required mechanism (per CLAUDE.md → Idempotency & Replayability, NON-NEGOTIABL
 
 ## Status
 
-Directive only. Implementation (`vendorIngestionSchema.ts`, `vendorIngestionParser.ts`, `vendorIngestionService.ts`, `vendorIngestionRoutes.ts`, tests) not yet built. This is Layer 1 (SOP); Layer 3 (execution) work starts on separate approval.
+Implemented for STORY-001: `vendorIngestionSchema.ts`, `vendorIngestionCsvParser.ts` / `vendorIngestionXlsxParser.ts`, `vendorIngestionRowValidator.ts`, `vendorIngestionService.ts` (orchestration + persistence + idempotency), `vendorIngestionRoutes.ts` (`POST /upload`), and tests for all of the above are built. Audit logging (also required by this story) is not yet built.

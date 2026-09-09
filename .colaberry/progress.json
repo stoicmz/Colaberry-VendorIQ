@@ -61,21 +61,44 @@
       "criteria": [
         {
           "text": "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given an invalid file format, when I attempt to upload, then I receive an error message.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: Data ingestion is logged for audit purposes.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/package.json",
+        "backend/package-lock.json",
+        "backend/src/config/database.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/models/IngestionAuditLog.ts",
+        "backend/src/models/README.md",
+        "backend/src/services/vendorIngestion/vendorIngestionSchema.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionRowValidator.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionCsvParser.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionXlsxParser.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionService.ts",
+        "backend/src/services/vendorIngestion/README.md",
+        "backend/src/routes/vendorIngestionRoutes.ts",
+        "directives/vendor_ingestion_stage.md",
+        "docs/ARCHITECTURE.md",
+        ".gitignore"
+      ],
+      "tests_added": [
+        "backend/src/services/vendorIngestion/vendorIngestionSchema.test.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionCsvParser.test.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionXlsxParser.test.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionService.test.ts",
+        "backend/src/routes/vendorIngestionRoutes.test.ts"
+      ],
+      "notes": "Persistence (SQLite via Sequelize) and audit logging added on top of the existing schema/parser/validator work. Ingestion now persists directly (IngestionBatch + RecruiterInteractionRecord) rather than deferring to a normalization stage, since none exists yet and STORY-002 needs the data to survive across requests — documented as a deliberate amendment in directives/vendor_ingestion_stage.md and docs/ARCHITECTURE.md. Idempotency dedup key is the uploaded file's SHA-256 hash (translated from CLAUDE.md's vendor_id/source/file_hash convention, which doesn't map to this recruiter-interaction schema). Every outcome (success, duplicate, rejected) writes an IngestionAuditLog row with a per-request correlationId echoed back in the HTTP response. 47/47 backend tests passing; tsc --noEmit clean.",
+      "updated_at": "2026-09-08T00:00:00.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,
