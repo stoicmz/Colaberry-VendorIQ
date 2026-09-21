@@ -1,0 +1,52 @@
+[
+  {
+    "recruiter_name": "Sarah Kim",
+    "recruiter_email": "sarah.kim@brightpathstaffing.com",
+    "recruiter_company": "Bright Path Staffing",
+    "interaction_date": "2026-08-18",
+    "interaction_type": "email",
+    "channel": "email",
+    "notes": "Checked in about the Acme Corp data analyst role, asked to confirm interest by Friday.",
+    "confirmed_by_user": true
+  },
+  {
+    "recruiter_name": "Priya Natarajan",
+    "recruiter_email": null,
+    "recruiter_company": "Vantage Talent Group",
+    "interaction_date": "2026-08-14",
+    "interaction_type": "call",
+    "channel": null,
+    "notes": "Called to say payment for the last placement would be a couple weeks late.",
+    "confirmed_by_user": true
+  },
+  {
+    "recruiter_name": "Devon Ruiz",
+    "recruiter_email": "devon@clearlinerecruiting.com",
+    "recruiter_company": "Clearline Recruiting",
+    "interaction_date": "2026-08-10",
+    "interaction_type": "interview",
+    "channel": "email",
+    "notes": "Scheduled the first-round interview for the ops coordinator role, confirmed time and panel.",
+    "confirmed_by_user": true
+  },
+  {
+    "recruiter_name": "Devon Ruiz",
+    "recruiter_email": null,
+    "recruiter_company": "Clearline Recruiting",
+    "interaction_date": "2026-08-10",
+    "interaction_type": "interview",
+    "channel": null,
+    "notes": null,
+    "confirmed_by_user": true
+  },
+  {
+    "recruiter_name": "Devon Ruiz",
+    "recruiter_email": null,
+    "recruiter_company": "Clearline Recruiting",
+    "interaction_date": "2026-08-10",
+    "interaction_type": "interview",
+    "channel": null,
+    "notes": null,
+    "confirmed_by_user": true
+  }
+]

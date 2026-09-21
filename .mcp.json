@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "vendoriq-kb": {
+      "command": "uv",
+      "args": [
+        "run",
+        "C:\\Users\\stoic\\OneDrive\\Documents\\Colaberry-AI-Project\\server.py"
+      ]
+    }
+  }
+}

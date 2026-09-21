@@ -1,0 +1,681 @@
+{
+  "schema_version": 2,
+  "project_name": "VendorIQ",
+  "descriptor": "An AI-driven job-seeker protection platform that tracks recruiter and vendor behavior patterns over time.",
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "kind": "FUNC",
+      "cluster": "Data Ingestion",
+      "priority": "must",
+      "statement": "The system must ingest recruiter interaction data from a CSV/XLSX file.",
+      "fulfilled_by": [
+        "STORY-001"
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "kind": "FUNC",
+      "cluster": "Dashboard",
+      "priority": "must",
+      "statement": "The system must display a dashboard showing recruiter interaction history to job seekers.",
+      "fulfilled_by": [
+        "STORY-002"
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "kind": "FUNC",
+      "cluster": "Data Analysis",
+      "priority": "must",
+      "statement": "The system must highlight red flags in recruiter interactions for manual review.",
+      "fulfilled_by": [
+        "STORY-004"
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "kind": "FUNC",
+      "cluster": "Data Verification",
+      "priority": "must",
+      "statement": "The system must allow job seekers to manually verify data accuracy before displaying it.",
+      "fulfilled_by": [
+        "STORY-003"
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "kind": "FUNC",
+      "cluster": "Data Analysis",
+      "priority": "must",
+      "statement": "The system must flag uncertain data for manual review without making automated judgments.",
+      "fulfilled_by": [
+        "STORY-005"
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "kind": "FUNC",
+      "cluster": "User Guidance",
+      "priority": "must",
+      "statement": "The system must provide clear explanations of displayed data to job seekers.",
+      "fulfilled_by": [
+        "STORY-007"
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "kind": "SAFE",
+      "cluster": "Data Verification",
+      "priority": "must",
+      "statement": "The system must ensure data is correctly attributed to the right recruiter.",
+      "fulfilled_by": [
+        "STORY-003"
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "kind": "NFR",
+      "cluster": "User Interface",
+      "priority": "must",
+      "statement": "Every screen the job seeker uses must complete its primary action in three clicks or fewer.",
+      "fulfilled_by": [
+        "STORY-002"
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "kind": "CONSTRAINT",
+      "cluster": "Data Ingestion",
+      "priority": "must",
+      "statement": "The system must not integrate with Gmail, Outlook, LinkedIn, Slack, CRM systems, or ATS systems.",
+      "fulfilled_by": []
+    },
+    {
+      "id": "REQ-010",
+      "kind": "SAFE",
+      "cluster": "Data Verification",
+      "priority": "must",
+      "statement": "The system must support manual data review to ensure completeness and correctness.",
+      "fulfilled_by": [
+        "STORY-011"
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "kind": "FUNC",
+      "cluster": "Dashboard",
+      "priority": "must",
+      "statement": "The system must display message frequency and timestamps in the dashboard.",
+      "fulfilled_by": [
+        "STORY-006"
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "kind": "FUNC",
+      "cluster": "Dashboard",
+      "priority": "must",
+      "statement": "The system must show whether replies occurred in recruiter interactions.",
+      "fulfilled_by": [
+        "STORY-012"
+      ]
+    },
+    {
+      "id": "REQ-013",
+      "kind": "FUNC",
+      "cluster": "Dashboard",
+      "priority": "must",
+      "statement": "The system must allow job seekers to see responsiveness and follow-up patterns.",
+      "fulfilled_by": [
+        "STORY-013"
+      ]
+    },
+    {
+      "id": "REQ-014",
+      "kind": "SAFE",
+      "cluster": "Data Verification",
+      "priority": "must",
+      "statement": "The system must ensure data is clean before ingestion.",
+      "fulfilled_by": [
+        "STORY-014"
+      ]
+    },
+    {
+      "id": "REQ-015",
+      "kind": "CONSTRAINT",
+      "cluster": "Data Analysis",
+      "priority": "must",
+      "statement": "The system must not score or judge recruiter behavior automatically.",
+      "fulfilled_by": []
+    },
+    {
+      "id": "REQ-016",
+      "kind": "REL",
+      "cluster": "User Feedback",
+      "priority": "should",
+      "statement": "The system must provide a trial period with real users to ensure reliability.",
+      "fulfilled_by": [
+        "STORY-008"
+      ]
+    },
+    {
+      "id": "REQ-017",
+      "kind": "REL",
+      "cluster": "User Feedback",
+      "priority": "should",
+      "statement": "The system must gather positive user feedback to confirm reliability and ease of use.",
+      "fulfilled_by": [
+        "STORY-009"
+      ]
+    },
+    {
+      "id": "REQ-018",
+      "kind": "OBS",
+      "cluster": "Audit",
+      "priority": "should",
+      "statement": "The system must maintain a log of manual reviews for audit purposes.",
+      "fulfilled_by": [
+        "STORY-010"
+      ]
+    }
+  ],
+  "releases": [
+    {
+      "key": "r0",
+      "demo": "Show ingestion of CSV/XLSX data and display on dashboard with manual verification process.",
+      "goal": "Establish basic data ingestion and display capabilities with manual verification.",
+      "name": "Initial Data Ingestion and Display",
+      "week_end": 1,
+      "week_start": 0,
+      "story_ids": [
+        "STORY-001",
+        "STORY-002",
+        "STORY-003",
+        "STORY-014"
+      ],
+      "starts_on": null,
+      "ends_on": null,
+      "is_demo_target": false
+    },
+    {
+      "key": "r1",
+      "demo": "Demonstrate red flag identification and manual review process on dashboard.",
+      "goal": "Introduce red flag highlighting and manual review capabilities.",
+      "name": "Red Flag Highlighting and Manual Review",
+      "week_end": 2,
+      "week_start": 1,
+      "story_ids": [
+        "STORY-004",
+        "STORY-005",
+        "STORY-011"
+      ],
+      "starts_on": null,
+      "ends_on": null,
+      "is_demo_target": false
+    },
+    {
+      "key": "r2",
+      "demo": "Show enhanced dashboard with message frequency, timestamps, and explanations.",
+      "goal": "Enhance data display with message frequency, timestamps, and user guidance.",
+      "name": "Enhanced Data Display and User Guidance",
+      "week_end": 3,
+      "week_start": 2,
+      "story_ids": [
+        "STORY-006",
+        "STORY-007",
+        "STORY-012",
+        "STORY-013"
+      ],
+      "starts_on": null,
+      "ends_on": null,
+      "is_demo_target": false
+    },
+    {
+      "key": "r3",
+      "demo": "Present user feedback collection and trial period results.",
+      "goal": "Implement user feedback mechanisms and conduct a trial period.",
+      "name": "User Feedback and Trial Period",
+      "week_end": 4,
+      "week_start": 3,
+      "story_ids": [
+        "STORY-008",
+        "STORY-009"
+      ],
+      "starts_on": null,
+      "ends_on": null,
+      "is_demo_target": false
+    },
+    {
+      "key": "r4",
+      "demo": "Show audit log functionality and reliability assurance through user feedback.",
+      "goal": "Ensure audit capabilities and reliability assurance through logs and feedback.",
+      "name": "Audit and Reliability Assurance",
+      "week_end": 5,
+      "week_start": 4,
+      "story_ids": [
+        "STORY-010"
+      ],
+      "starts_on": null,
+      "ends_on": null,
+      "is_demo_target": false
+    }
+  ],
+  "stories": [
+    {
+      "id": "STORY-001",
+      "title": "Ingest recruiter interaction data from CSV/XLSX",
+      "release": "r0",
+      "fulfills": [
+        "REQ-001"
+      ],
+      "narrative": "As a job seeker, I want to upload my recruiter interaction data, so that I can see it on the dashboard.",
+      "acceptance": [
+        "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
+        "Given an invalid file format, when I attempt to upload, then I receive an error message.",
+        "Trust: Data ingestion is logged for audit purposes."
+      ],
+      "blocked_by": [],
+      "owner_agent": "Development Team",
+      "failure_paths": [
+        "File format is not supported",
+        "File is corrupted",
+        "File contains no data"
+      ],
+      "task_guidance": "Implement file upload functionality and parse CSV/XLSX data for ingestion.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-002",
+      "title": "Display recruiter interaction history on dashboard",
+      "release": "r0",
+      "fulfills": [
+        "REQ-002",
+        "REQ-008"
+      ],
+      "narrative": "As a job seeker, I want to view my interaction history with recruiters, so that I can track my job application progress.",
+      "acceptance": [
+        "Given a job seeker is logged in, when they navigate to the dashboard, then they see a list of recruiter interactions.",
+        "Given a job seeker clicks on a recruiter interaction, when they view the details, then it loads within three clicks.",
+        "Trust: Every interaction detail view is logged with a timestamp."
+      ],
+      "blocked_by": [],
+      "owner_agent": "Frontend Developer",
+      "failure_paths": [
+        "Dashboard fails to load interactions.",
+        "Interaction details take more than three clicks to access.",
+        "Interaction details fail to load."
+      ],
+      "task_guidance": "Implement a dashboard view that lists recruiter interactions with a clickable link to view details. Ensure navigation from dashboard to detail view is within three clicks.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-003",
+      "title": "Manual verification of data accuracy and attribution",
+      "release": "r0",
+      "fulfills": [
+        "REQ-004",
+        "REQ-007"
+      ],
+      "narrative": "As a data reviewer, I want to manually verify data accuracy and attribution, so that data is correctly attributed to the right recruiter.",
+      "acceptance": [
+        "Given a set of recruiter interaction data, when I manually review the data, then I can confirm the data is accurately attributed to the correct recruiter.",
+        "Given a data entry with incorrect attribution, when I identify and correct it, then the system updates the attribution correctly.",
+        "Trust: Every manual correction is logged with the reviewer ID and timestamp."
+      ],
+      "blocked_by": [],
+      "owner_agent": "Data Reviewer",
+      "failure_paths": [
+        "Incorrect attribution is not flagged for review.",
+        "Manual corrections are not saved.",
+        "Reviewer ID is not logged with corrections."
+      ],
+      "task_guidance": "Implement a manual review interface that allows data reviewers to verify and correct recruiter attributions. Ensure that each correction is logged with the reviewer ID and timestamp.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-004",
+      "title": "Highlight red flags in recruiter interactions",
+      "release": "r1",
+      "fulfills": [
+        "REQ-003"
+      ],
+      "narrative": "As a job seeker, I want to see red flags in recruiter interactions, so that I can focus on potential issues.",
+      "acceptance": [
+        "Given ingested data, when red flags are identified, then they are highlighted on the dashboard.",
+        "Given no red flags, when I view the dashboard, then no highlights are shown.",
+        "Trust: Red flag identification is logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-003"
+      ],
+      "owner_agent": "Development Team",
+      "failure_paths": [
+        "Red flags are not identified",
+        "Incorrect data is flagged",
+        "Highlighting fails"
+      ],
+      "task_guidance": "Implement logic to identify and highlight red flags in recruiter interactions.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-005",
+      "title": "Flag uncertain data for manual review",
+      "release": "r1",
+      "fulfills": [
+        "REQ-005"
+      ],
+      "narrative": "As a job seeker, I want uncertain data to be flagged for manual review, so that I can make informed decisions.",
+      "acceptance": [
+        "Given uncertain data, when it is flagged, then I am notified for manual review.",
+        "Given certain data, when I view it, then no flag is shown.",
+        "Trust: Flagging actions are logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-003"
+      ],
+      "owner_agent": "Development Team",
+      "failure_paths": [
+        "Uncertain data is not flagged",
+        "Flags are not displayed",
+        "Notification fails"
+      ],
+      "task_guidance": "Implement a system to flag uncertain data for manual review.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-006",
+      "title": "Display message frequency and timestamps",
+      "release": "r2",
+      "fulfills": [
+        "REQ-011"
+      ],
+      "narrative": "As a job seeker, I want to see message frequency and timestamps, so that I can understand communication patterns.",
+      "acceptance": [
+        "Given ingested data, when I view the dashboard, then I see message frequency and timestamps.",
+        "Given missing data, when I view the dashboard, then I see a message indicating incomplete data.",
+        "Trust: Display actions are logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-005"
+      ],
+      "owner_agent": "Development Team",
+      "failure_paths": [
+        "Frequency data is incorrect",
+        "Timestamps are missing",
+        "Display fails"
+      ],
+      "task_guidance": "Enhance the dashboard to display message frequency and timestamps.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-007",
+      "title": "Provide clear explanations of displayed data",
+      "release": "r2",
+      "fulfills": [
+        "REQ-006"
+      ],
+      "narrative": "As a job seeker, I want clear explanations of displayed data, so that I can easily interpret it.",
+      "acceptance": [
+        "Given displayed data, when I view explanations, then I understand the data context.",
+        "Given unclear data, when I view explanations, then I see a message indicating further review is needed.",
+        "Trust: Explanation access is logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-005"
+      ],
+      "owner_agent": "Development Team",
+      "failure_paths": [
+        "Explanations are unclear",
+        "Explanations are missing",
+        "Tooltip fails to load"
+      ],
+      "task_guidance": "Implement explanatory tooltips or sections on the dashboard.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-008",
+      "title": "Collect user feedback during trial period",
+      "release": "r3",
+      "fulfills": [
+        "REQ-016"
+      ],
+      "narrative": "As a product manager, I want to collect user feedback during a trial period, so that I can assess system reliability.",
+      "acceptance": [
+        "Given a trial period, when users provide feedback, then it is collected and stored.",
+        "Given no feedback, when the trial ends, then I see a report indicating no feedback was received.",
+        "Trust: Feedback collection is logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-007"
+      ],
+      "owner_agent": "Product Management",
+      "failure_paths": [
+        "Feedback is not collected",
+        "Feedback is lost",
+        "Report generation fails"
+      ],
+      "task_guidance": "Set up a feedback collection mechanism during the trial period.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-009",
+      "title": "Ensure positive user feedback confirms reliability",
+      "release": "r3",
+      "fulfills": [
+        "REQ-017"
+      ],
+      "narrative": "As a product manager, I want positive user feedback to confirm system reliability, so that I can trust the system's performance.",
+      "acceptance": [
+        "Given collected feedback, when it is positive, then I confirm system reliability.",
+        "Given negative feedback, when I review it, then I identify areas for improvement.",
+        "Trust: Feedback analysis is logged for audit purposes."
+      ],
+      "blocked_by": [
+        "STORY-008"
+      ],
+      "owner_agent": "Product Management",
+      "failure_paths": [
+        "Feedback is misinterpreted",
+        "Analysis fails",
+        "Improvement areas are not identified"
+      ],
+      "task_guidance": "Analyze user feedback to assess system reliability.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-010",
+      "title": "Maintain a log of manual reviews for audit purposes",
+      "release": "r4",
+      "fulfills": [
+        "REQ-018"
+      ],
+      "narrative": "As a compliance officer, I want a log of manual reviews, so that I can ensure audit compliance.",
+      "acceptance": [
+        "Given manual reviews, when they are logged, then I can access the log for audit purposes.",
+        "Given no reviews, when I access the log, then I see a message indicating no reviews are logged.",
+        "Trust: Log access is restricted to authorized personnel."
+      ],
+      "blocked_by": [
+        "STORY-009"
+      ],
+      "owner_agent": "Compliance Team",
+      "failure_paths": [
+        "Logs are incomplete",
+        "Access is unauthorized",
+        "Log retrieval fails"
+      ],
+      "task_guidance": "Implement a logging mechanism for manual reviews.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-011",
+      "title": "Support manual data review for completeness and correctness",
+      "release": "r1",
+      "fulfills": [
+        "REQ-010"
+      ],
+      "narrative": "As a data reviewer, I want to manually review data for completeness and correctness, so that data integrity is maintained.",
+      "acceptance": [
+        "Given a dataset, when I review it manually, then I can identify and correct incomplete or incorrect data entries.",
+        "Given a data entry that is flagged as incomplete, when I complete it, then the system updates the entry accordingly.",
+        "Trust: Every manual review action is logged with the reviewer ID and timestamp."
+      ],
+      "blocked_by": [
+        "STORY-003"
+      ],
+      "owner_agent": "Data Reviewer",
+      "failure_paths": [
+        "Incomplete data is not flagged for review.",
+        "Corrections are not saved.",
+        "Reviewer actions are not logged."
+      ],
+      "task_guidance": "Create a manual review process that allows data reviewers to check for completeness and correctness of data entries. Ensure that all actions are logged with reviewer ID and timestamp.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-012",
+      "title": "Display recruiter interaction reply status",
+      "release": "r2",
+      "fulfills": [
+        "REQ-012"
+      ],
+      "narrative": "As a job seeker, I want to see whether replies occurred in recruiter interactions, so that I can assess recruiter engagement.",
+      "acceptance": [
+        "Given a recruiter interaction, when I view the interaction details, then I can see whether a reply occurred.",
+        "Given an interaction without a reply, when I view the details, then it clearly indicates no reply was made.",
+        "Trust: Every interaction view logs the user ID and timestamp."
+      ],
+      "blocked_by": [
+        "STORY-006"
+      ],
+      "owner_agent": "Job Seeker",
+      "failure_paths": [
+        "Reply status is not displayed.",
+        "Incorrect reply status is shown.",
+        "User views are not logged."
+      ],
+      "task_guidance": "Enhance the interaction display to show reply status for each recruiter interaction. Ensure that each view is logged with user ID and timestamp.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-013",
+      "title": "Show job seekers recruiter responsiveness and follow-up patterns",
+      "release": "r2",
+      "fulfills": [
+        "REQ-013"
+      ],
+      "narrative": "As a job seeker, I want to see recruiter responsiveness and follow-up patterns, so that I can make informed decisions about my job applications.",
+      "acceptance": [
+        "Given a recruiter's interaction history, when I view it, then I can see patterns of responsiveness and follow-up.",
+        "Given a recruiter with no follow-up, when I view their history, then it clearly indicates lack of follow-up.",
+        "Trust: Every pattern view logs the user ID and timestamp."
+      ],
+      "blocked_by": [
+        "STORY-012"
+      ],
+      "owner_agent": "Job Seeker",
+      "failure_paths": [
+        "Patterns are not displayed.",
+        "Incorrect patterns are shown.",
+        "User views are not logged."
+      ],
+      "task_guidance": "Implement a display feature that shows responsiveness and follow-up patterns for recruiters. Ensure that each view is logged with user ID and timestamp.",
+      "due_on": null,
+      "due_baseline_on": null
+    },
+    {
+      "id": "STORY-014",
+      "title": "Ensure data is clean before ingestion",
+      "release": "r0",
+      "fulfills": [
+        "REQ-014"
+      ],
+      "narrative": "As a system administrator, I want to ensure data is clean before ingestion, so that data quality is maintained.",
+      "acceptance": [
+        "Given a dataset for ingestion, when I run the cleaning process, then the system removes or corrects invalid data entries.",
+        "Given a dataset with missing fields, when I run the cleaning process, then the system flags entries with missing fields for review.",
+        "Trust: Every cleaning action is logged with the administrator ID and timestamp."
+      ],
+      "blocked_by": [],
+      "owner_agent": "System Administrator",
+      "failure_paths": [
+        "Invalid data is not corrected.",
+        "Missing fields are not flagged.",
+        "Cleaning actions are not logged."
+      ],
+      "task_guidance": "Develop a data cleaning process that checks for and corrects invalid data entries before ingestion. Ensure that all cleaning actions are logged with administrator ID and timestamp.",
+      "due_on": null,
+      "due_baseline_on": null
+    }
+  ],
+  "agents": [],
+  "project": {
+    "name": "VendorIQ",
+    "descriptor": "An AI-driven job-seeker protection platform that tracks recruiter and vendor behavior patterns over time.",
+    "repo_url": null,
+    "plan_version": 2,
+    "plan_sha256": "48761b328301be09bfb17b924c86d7ff63e688276c55c8c0faeb7a46bff24d9a"
+  },
+  "schedule": null,
+  "derived": {
+    "measures": [],
+    "guardrails": [
+      {
+        "id": "REQ-007",
+        "statement": "The system must ensure data is correctly attributed to the right recruiter."
+      },
+      {
+        "id": "REQ-010",
+        "statement": "The system must support manual data review to ensure completeness and correctness."
+      },
+      {
+        "id": "REQ-014",
+        "statement": "The system must ensure data is clean before ingestion."
+      }
+    ],
+    "systems": [
+      "Gmail",
+      "Outlook",
+      "LinkedIn",
+      "Slack",
+      "CRM",
+      "ATS"
+    ],
+    "roles": [
+      "job seeker",
+      "data reviewer",
+      "product manager",
+      "compliance officer",
+      "system administrator"
+    ],
+    "counts": {
+      "requirements_total": 18,
+      "requirements_by_kind": {
+        "CONSTRAINT": 2,
+        "FUNC": 9,
+        "NFR": 1,
+        "OBS": 1,
+        "REL": 2,
+        "SAFE": 3
+      },
+      "stories_total": 14,
+      "releases_total": 5,
+      "agents_total": 0,
+      "failure_paths_total": 41,
+      "agents_by_autonomy": {}
+    }
+  }
+}
