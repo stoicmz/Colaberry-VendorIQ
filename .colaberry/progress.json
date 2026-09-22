@@ -3,13 +3,13 @@
   "project": "VendorIQ",
   "totals": {
     "stories_total": 15,
-    "stories_verified": 1,
+    "stories_verified": 4,
     "stories_submitted": 0,
-    "stories_in_progress": 14,
+    "stories_in_progress": 11,
     "stories_not_started": 0,
     "criteria_total": 47,
-    "criteria_passed": 5,
-    "points_awarded": 53
+    "criteria_passed": 14,
+    "points_awarded": 212
   },
   "stories": [
     {
@@ -100,19 +100,15 @@
       "notes": "Persistence (SQLite via Sequelize) and audit logging added on top of the existing schema/parser/validator work. Ingestion now persists directly (IngestionBatch + RecruiterInteractionRecord) rather than deferring to a normalization stage, since none exists yet and STORY-002 needs the data to survive across requests — documented as a deliberate amendment in directives/vendor_ingestion_stage.md and docs/ARCHITECTURE.md. Idempotency dedup key is the uploaded file's SHA-256 hash (translated from CLAUDE.md's vendor_id/source/file_hash convention, which doesn't map to this recruiter-interaction schema). Every outcome (success, duplicate, rejected) writes an IngestionAuditLog row with a per-request correlationId echoed back in the HTTP response. 47/47 backend tests passing; tsc --noEmit clean.",
       "updated_at": "2026-09-08T00:00:00.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given a CSV/XLSX file with recruiter interactions, when I upload it, then the data is ingested into the system.",
-          "Given an invalid file format, when I attempt to upload, then I receive an error message.",
-          "Trust: Data ingestion is logged for audit purposes."
-        ]
+        "verified_at": "2026-09-09T01:30:41.289Z",
+        "commit_sha": "cee30870507ce1d3d0d65cf14a0065026236f67e",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/cee30870507ce1d3d0d65cf14a0065026236f67e",
+        "commit_at": "2026-09-09T01:25:00Z",
+        "points_awarded": 53,
+        "outstanding": []
       }
     },
     {
@@ -150,19 +146,15 @@
       "notes": "Added the backend's first runnable entry point (backend/src/index.ts) since STORY-001 built the ingestion pipeline but never wired it into an app. Dashboard is server-rendered HTML (GET /dashboard, GET /dashboard/interactions/:id) reading the existing RecruiterInteractionRecord model via a new read-only service (recruiterInteractionsService) — no new frontend toolchain. All interpolated recruiter-supplied fields (name, company, notes) are HTML-escaped; verified live that an injected <script> tag renders inert. Dashboard-to-detail navigation is 1 click, inside the 3-click budget. Every successful detail fetch writes an InteractionViewLog row (interactionId + viewedAt), including repeat views; a 404 writes nothing. Failure paths covered: list/detail service errors render a 500 error page instead of crashing, unknown id renders 404, malformed id renders 400 — all with tests. Known gap, called out and accepted with the user before building: there is no auth system yet in this codebase (no story for one in r0), so 'job seeker is logged in' is satisfied as a single implicit job seeker rather than real login — revisit once an auth story exists. 63/63 backend tests passing; tsc --noEmit clean.",
       "updated_at": "2026-09-21T00:00:00.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given a job seeker is logged in, when they navigate to the dashboard, then they see a list of recruiter interactions.",
-          "Given a job seeker clicks on a recruiter interaction, when they view the details, then it loads within three clicks.",
-          "Trust: Every interaction detail view is logged with a timestamp."
-        ]
+        "verified_at": "2026-09-21T23:48:00.943Z",
+        "commit_sha": "2c223d4dd43b3f48f4eb20f7c4282edb633aa224",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/2c223d4dd43b3f48f4eb20f7c4282edb633aa224",
+        "commit_at": "2026-09-21T23:25:13Z",
+        "points_awarded": 53,
+        "outstanding": []
       }
     },
     {
@@ -198,19 +190,15 @@
       "notes": "Built as a data-reviewer-facing manual review interface, per the story narrative and STORY-000's owner list ('Data Reviewer' owns STORY-003) rather than REQ-004's literal 'job seekers' wording, which appears to be a mismatched requirement -- flagged to the user and confirmed rather than silently building around it; REQ-004's text should be corrected to say 'data reviewer' to match. No auth system exists (same gap as STORY-002's implicit job seeker), so reviewer identity is captured as a required free-text reviewer ID field on the review form itself rather than a login -- deliberately not stubbed with a placeholder, since REQ-007 is a SAFE requirement and a fake ID would make the Trust criterion trivially true. New AttributionReview log records every review action (confirmed or corrected) with reviewerId, previous/new recruiter name+company, and a timestamp; confirming is treated as a real review event and logged too, not just corrections, since a reviewer confirming correct attribution is itself the manual-review action REQ-004/REQ-010 ask for. Attribution update + log write share one transaction. Failure paths covered with tests: missing reviewer ID and empty recruiter name re-render the form with the error and preserve what the reviewer typed rather than losing it, unknown/malformed interaction id, and save failures (mocked service rejection) all leave the underlying record untouched. Verified live end-to-end against an isolated server/database (not reusing the developer's running instance): uploaded data, opened the review form, submitted a correction, confirmed it applied and redirected, and confirmed the missing-reviewer-ID path leaves the record unchanged. 78/78 backend tests passing; tsc --noEmit clean.",
       "updated_at": "2026-09-22T00:00:00.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given a set of recruiter interaction data, when I manually review the data, then I can confirm the data is accurately attributed to the correct recruiter.",
-          "Given a data entry with incorrect attribution, when I identify and correct it, then the system updates the attribution correctly.",
-          "Trust: Every manual correction is logged with the reviewer ID and timestamp."
-        ]
+        "verified_at": "2026-09-22T01:04:56.953Z",
+        "commit_sha": "a762d9a4f771c80656c2b5ea03f900e71cab46cb",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/a762d9a4f771c80656c2b5ea03f900e71cab46cb",
+        "commit_at": "2026-09-22T01:04:41Z",
+        "points_awarded": 53,
+        "outstanding": []
       }
     },
     {
