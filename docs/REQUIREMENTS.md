@@ -84,7 +84,9 @@ Context for the stories that use it — constraints do not get their own story.
 
 ### REQ-004 — Functional · must
 
-The system must allow job seekers to manually verify data accuracy before displaying it.
+The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.
+
+_Amended 2026-09-22: changed from "The system must allow job seekers to manually verify data accuracy before displaying it" to "The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers." STORY-003's narrative ("As a data reviewer, I want to manually verify data accuracy and attribution...") and STORY-000's owner list both assign this to the Data Reviewer role, not job seekers — the original wording named the wrong actor. Caught and confirmed with the user while building STORY-003._
 
 Fulfilled by: STORY-003
 
@@ -105,6 +107,14 @@ Fulfilled by: STORY-011
 The system must ensure data is clean before ingestion.
 
 Fulfilled by: STORY-014
+
+### REQ-019 — Safety · must
+
+The system must require job seekers to attest that submitted interaction data is factual, and must not treat unattested or disputed submissions as confirmed recruiter history without manual review.
+
+_Added 2026-09-22, during the REQ-004 investigation below. REQ-004/REQ-007 govern whether ingested data is correctly attributed to the right recruiter once submitted; nothing governs whether the submission itself is truthful. Every existing SAFE requirement protects the job seeker from bad data — this is the first one that protects the recruiter from a fabricated submission, which matters because the system's value ("tracks recruiter and vendor behavior patterns over time") depends on entries not being weaponizable by either side. Per REQ-005/REQ-015, this cannot be enforced by an automated truth-check — it has to be an attestation at submission time, with anything disputed routed to the existing manual-review path (STORY-003/005/011) rather than a new automated judgment. No story fulfills this yet; it is an acknowledged gap, not a placeholder for one already built._
+
+Fulfilled by: _none yet — flagged 2026-09-22, pending a story_
 
 ## User Feedback
 

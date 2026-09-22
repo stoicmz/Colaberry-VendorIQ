@@ -24,5 +24,6 @@ none, because it is context rather than work.
 | REQ-016 | Reliability | should | STORY-008 |
 | REQ-017 | Reliability | should | STORY-009 |
 | REQ-018 | Observability | should | STORY-010 |
+| REQ-019 | Safety | must | _(gap — no story yet, flagged 2026-09-22)_ |
 
-✅ Every must-have requirement is fulfilled by at least one story.
+⚠️ REQ-019 is a must-have requirement with no fulfilling story yet — see `docs/REQUIREMENTS.md` for context. Every other must-have requirement is fulfilled by at least one story.
