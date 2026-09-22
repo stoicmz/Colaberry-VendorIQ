@@ -7,6 +7,7 @@ import { ensureModelsSynced } from './models/VendorIngestionRecord';
 export function buildApp(): express.Express {
   const app = express();
   app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
   app.use('/api/vendor-ingestion', vendorIngestionRouter);
   app.use('/api/interactions', recruiterInteractionRouter);
   app.use('/dashboard', dashboardRouter);

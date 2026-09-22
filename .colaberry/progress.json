@@ -172,21 +172,31 @@
       "criteria": [
         {
           "text": "Given a set of recruiter interaction data, when I manually review the data, then I can confirm the data is accurately attributed to the correct recruiter.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given a data entry with incorrect attribution, when I identify and correct it, then the system updates the attribution correctly.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: Every manual correction is logged with the reviewer ID and timestamp.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/src/index.ts",
+        "backend/src/models/AttributionReview.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/routes/dashboardRoutes.ts",
+        "backend/src/services/attributionReview/attributionReviewService.ts",
+        "backend/src/views/dashboardTemplates.ts"
+      ],
+      "tests_added": [
+        "backend/src/services/attributionReview/attributionReviewService.test.ts",
+        "backend/src/routes/dashboardRoutes.review.test.ts"
+      ],
+      "notes": "Built as a data-reviewer-facing manual review interface, per the story narrative and STORY-000's owner list ('Data Reviewer' owns STORY-003) rather than REQ-004's literal 'job seekers' wording, which appears to be a mismatched requirement -- flagged to the user and confirmed rather than silently building around it; REQ-004's text should be corrected to say 'data reviewer' to match. No auth system exists (same gap as STORY-002's implicit job seeker), so reviewer identity is captured as a required free-text reviewer ID field on the review form itself rather than a login -- deliberately not stubbed with a placeholder, since REQ-007 is a SAFE requirement and a fake ID would make the Trust criterion trivially true. New AttributionReview log records every review action (confirmed or corrected) with reviewerId, previous/new recruiter name+company, and a timestamp; confirming is treated as a real review event and logged too, not just corrections, since a reviewer confirming correct attribution is itself the manual-review action REQ-004/REQ-010 ask for. Attribution update + log write share one transaction. Failure paths covered with tests: missing reviewer ID and empty recruiter name re-render the form with the error and preserve what the reviewer typed rather than losing it, unknown/malformed interaction id, and save failures (mocked service rejection) all leave the underlying record untouched. Verified live end-to-end against an isolated server/database (not reusing the developer's running instance): uploaded data, opened the review form, submitted a correction, confirmed it applied and redirected, and confirmed the missing-reviewer-ID path leaves the record unchanged. 78/78 backend tests passing; tsc --noEmit clean.",
+      "updated_at": "2026-09-22T00:00:00.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,

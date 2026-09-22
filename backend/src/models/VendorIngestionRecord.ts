@@ -10,6 +10,7 @@ import { sequelize } from '../config/database';
 import { RecruiterInteractionType } from '../services/vendorIngestion/vendorIngestionSchema';
 import './IngestionAuditLog';
 import './InteractionViewLog';
+import './AttributionReview';
 
 export class IngestionBatch extends Model<InferAttributes<IngestionBatch>, InferCreationAttributes<IngestionBatch>> {
   declare id: CreationOptional<number>;

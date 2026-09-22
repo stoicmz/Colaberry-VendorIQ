@@ -36,6 +36,11 @@ function layout(title: string, body: string): string {
   dl { display: grid; grid-template-columns: 10rem 1fr; row-gap: 0.5rem; }
   dt { font-weight: 600; color: #444; }
   .back { display: inline-block; margin-bottom: 1rem; }
+  .review-link { display: inline-block; margin-top: 1rem; }
+  form.review-form { margin-top: 1rem; display: grid; gap: 0.75rem; max-width: 28rem; }
+  form.review-form label { display: grid; gap: 0.25rem; font-weight: 600; color: #444; }
+  form.review-form input { padding: 0.4rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+  form.review-form button { justify-self: start; padding: 0.5rem 1.25rem; background: #0b5fff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -82,7 +87,42 @@ export function renderDetailPage(interaction: InteractionDetail): string {
       <dt>Channel</dt><dd>${escapeHtml(interaction.channel ?? '—')}</dd>
       <dt>Date</dt><dd>${formatDate(interaction.interactionDate)}</dd>
       <dt>Notes</dt><dd>${escapeHtml(interaction.notes ?? '—')}</dd>
-    </dl>`
+    </dl>
+    <a class="review-link" href="/dashboard/interactions/${interaction.id}/review">Review / correct attribution &rarr;</a>`
+  );
+}
+
+export interface ReviewFormValues {
+  reviewerId?: string;
+  recruiterName?: string;
+  recruiterCompany?: string;
+}
+
+export function renderReviewForm(interaction: InteractionDetail, options?: { error?: string; values?: ReviewFormValues }): string {
+  const reviewerId = options?.values?.reviewerId ?? '';
+  const recruiterName = options?.values?.recruiterName ?? interaction.recruiterName;
+  const recruiterCompany = options?.values?.recruiterCompany ?? interaction.recruiterCompany ?? '';
+
+  const errorBlock = options?.error ? `<div class="error">${escapeHtml(options.error)}</div>` : '';
+
+  return layout(
+    `Review attribution - ${interaction.recruiterName}`,
+    `<a class="back" href="/dashboard/interactions/${interaction.id}">&larr; Back to interaction</a>
+    <h1>Review attribution</h1>
+    <p>Confirm this interaction is attributed to the correct recruiter, or correct it below.</p>
+    ${errorBlock}
+    <form class="review-form" method="post" action="/dashboard/interactions/${interaction.id}/review">
+      <label>Your reviewer ID
+        <input type="text" name="reviewerId" value="${escapeHtml(reviewerId)}" required>
+      </label>
+      <label>Recruiter name
+        <input type="text" name="recruiterName" value="${escapeHtml(recruiterName)}" required>
+      </label>
+      <label>Recruiter company
+        <input type="text" name="recruiterCompany" value="${escapeHtml(recruiterCompany)}">
+      </label>
+      <button type="submit">Save review</button>
+    </form>`
   );
 }
 
