@@ -1,9 +1,11 @@
 import { randomUUID } from 'crypto';
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import { CsvParseError } from '../services/vendorIngestion/vendorIngestionCsvParser';
-import { XlsxParseError } from '../services/vendorIngestion/vendorIngestionXlsxParser';
+import { CsvParseError, parseRecruiterInteractionsCsvRows } from '../services/vendorIngestion/vendorIngestionCsvParser';
+import { XlsxParseError, parseRecruiterInteractionsXlsxRows } from '../services/vendorIngestion/vendorIngestionXlsxParser';
 import { ingestRecruiterInteractionsFile, NoDataError } from '../services/vendorIngestion/vendorIngestionService';
+import { RawRow } from '../services/vendorIngestion/vendorIngestionRowValidator';
+import { cleanRows, logCleaningActions } from '../services/dataCleaning/dataCleaningService';
 import { ensureModelsSynced } from '../models/VendorIngestionRecord';
 import { IngestionAuditLog } from '../models/IngestionAuditLog';
 
@@ -121,6 +123,93 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         console.error('Failed to write ingestion audit log for unexpected error', logErr);
       }
       res.status(500).json({ error: 'Unexpected error while processing the file.', correlationId });
+    }
+  });
+});
+
+// Runs the data-cleaning process ahead of ingestion (REQ-014): corrects fixable
+// issues, flags rows missing a required field for manual review instead of
+// silently dropping them, and removes rows that are unrecoverable. Every action
+// taken is logged with the administrator ID and a timestamp (the Trust
+// criterion) via logCleaningActions. This does not persist rows into the
+// ingestion tables -- it is a pre-ingestion report; POST /upload still does the
+// actual ingest, on the cleaned file the administrator re-submits.
+vendorIngestionRouter.post('/clean', (req: Request, res: Response) => {
+  const correlationId = randomUUID();
+
+  upload.single('file')(req, res, async (uploadErr: unknown) => {
+    try {
+      if (uploadErr instanceof multer.MulterError) {
+        res.status(400).json({ error: `Upload rejected: ${uploadErr.message}`, correlationId });
+        return;
+      }
+      if (uploadErr) {
+        res.status(400).json({ error: 'Upload failed', correlationId });
+        return;
+      }
+
+      const file = req.file;
+      if (!file) {
+        res.status(400).json({ error: 'No file was uploaded. Attach a file under the "file" field.', correlationId });
+        return;
+      }
+
+      const administratorId = typeof req.body?.administratorId === 'string' ? req.body.administratorId.trim() : '';
+      if (!administratorId) {
+        res.status(400).json({ error: 'administratorId is required to run the cleaning process.', correlationId });
+        return;
+      }
+
+      const extension = getExtension(file.originalname);
+      if (!isSupportedExtension(extension)) {
+        res.status(400).json({
+          error: `Unsupported file format ".${extension || 'unknown'}". Upload a .csv or .xlsx file.`,
+          correlationId,
+        });
+        return;
+      }
+
+      let rows: RawRow[];
+      try {
+        rows =
+          extension === 'csv'
+            ? parseRecruiterInteractionsCsvRows(file.buffer)
+            : await parseRecruiterInteractionsXlsxRows(file.buffer);
+      } catch (err) {
+        if (err instanceof CsvParseError || err instanceof XlsxParseError) {
+          res.status(400).json({ error: err.message, correlationId });
+          return;
+        }
+        throw err;
+      }
+
+      if (rows.length === 0) {
+        res.status(400).json({ error: 'File contains no data.', correlationId });
+        return;
+      }
+
+      const { clean, flagged, removedCount, actions } = cleanRows(rows);
+      await logCleaningActions(actions, administratorId, correlationId);
+
+      const correctedRowCount = new Set(
+        actions.filter((action) => action.action === 'corrected').map((action) => action.rowNumber)
+      ).size;
+
+      res.status(200).json({
+        correlationId,
+        administratorId,
+        totalRows: rows.length,
+        cleanCount: clean.length,
+        correctedRowCount,
+        flaggedCount: flagged.length,
+        removedCount,
+        flagged: flagged.map((row) => ({ rowNumber: row.rowNumber, data: row.data })),
+        actions,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Unexpected error while running the data cleaning process', err);
+      res.status(500).json({ error: 'Unexpected error while running the cleaning process.', correlationId });
     }
   });
 });

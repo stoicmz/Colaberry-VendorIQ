@@ -36,7 +36,7 @@ function isRowBlank(row: ExcelJS.Row): boolean {
   return !hasValue;
 }
 
-export async function parseRecruiterInteractionsXlsx(input: Buffer): Promise<XlsxParseResult> {
+export async function parseRecruiterInteractionsXlsxRows(input: Buffer): Promise<RawRow[]> {
   const workbook = new ExcelJS.Workbook();
   try {
     // exceljs's own index.d.ts declares `declare interface Buffer extends ArrayBuffer {}`,
@@ -49,7 +49,7 @@ export async function parseRecruiterInteractionsXlsx(input: Buffer): Promise<Xls
 
   const worksheet = workbook.worksheets[0];
   if (!worksheet) {
-    return { totalRows: 0, valid: [], errors: [] };
+    return [];
   }
 
   const headers: string[] = [];
@@ -70,6 +70,11 @@ export async function parseRecruiterInteractionsXlsx(input: Buffer): Promise<Xls
     rows.push({ rowNumber, data });
   }
 
+  return rows;
+}
+
+export async function parseRecruiterInteractionsXlsx(input: Buffer): Promise<XlsxParseResult> {
+  const rows = await parseRecruiterInteractionsXlsxRows(input);
   const { valid, errors } = validateRows(rows);
 
   return { totalRows: rows.length, valid, errors };

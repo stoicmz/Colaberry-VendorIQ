@@ -15,7 +15,7 @@ export class CsvParseError extends Error {
   }
 }
 
-export function parseRecruiterInteractionsCsv(input: Buffer | string): CsvParseResult {
+export function parseRecruiterInteractionsCsvRows(input: Buffer | string): RawRow[] {
   let rawRows: Record<string, string>[];
   try {
     rawRows = parse(input, {
@@ -29,8 +29,12 @@ export function parseRecruiterInteractionsCsv(input: Buffer | string): CsvParseR
     throw new CsvParseError('Unable to parse CSV file', err);
   }
 
-  const rows: RawRow[] = rawRows.map((data, index) => ({ rowNumber: index + 2, data }));
+  return rawRows.map((data, index) => ({ rowNumber: index + 2, data }));
+}
+
+export function parseRecruiterInteractionsCsv(input: Buffer | string): CsvParseResult {
+  const rows = parseRecruiterInteractionsCsvRows(input);
   const { valid, errors } = validateRows(rows);
 
-  return { totalRows: rawRows.length, valid, errors };
+  return { totalRows: rows.length, valid, errors };
 }

@@ -11,6 +11,7 @@ import { RecruiterInteractionType } from '../services/vendorIngestion/vendorInge
 import './IngestionAuditLog';
 import './InteractionViewLog';
 import './AttributionReview';
+import './DataCleaningLog';
 
 export class IngestionBatch extends Model<InferAttributes<IngestionBatch>, InferCreationAttributes<IngestionBatch>> {
   declare id: CreationOptional<number>;

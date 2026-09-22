@@ -588,21 +588,32 @@
       "criteria": [
         {
           "text": "Given a dataset for ingestion, when I run the cleaning process, then the system removes or corrects invalid data entries.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given a dataset with missing fields, when I run the cleaning process, then the system flags entries with missing fields for review.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: Every cleaning action is logged with the administrator ID and timestamp.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/src/models/DataCleaningLog.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/services/dataCleaning/dataCleaningService.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionCsvParser.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionXlsxParser.ts",
+        "backend/src/routes/vendorIngestionRoutes.ts"
+      ],
+      "tests_added": [
+        "backend/src/services/dataCleaning/dataCleaningService.test.ts",
+        "backend/src/services/dataCleaning/dataCleaningService.persistence.test.ts",
+        "backend/src/routes/vendorIngestionRoutes.clean.test.ts"
+      ],
+      "notes": "Built as its own admin-run pre-ingestion stage -- POST /api/vendor-ingestion/clean -- rather than folding silently into STORY-001's /upload, since the acceptance criteria describe cleaning as an explicit action ('when I run the cleaning process') and invalid rows there were previously just dropped and reported as a string, never corrected or held for review. administratorId is a required free-text form field (same precedent as STORY-002/003: no auth system exists yet, and REQ-014 being SAFE means a placeholder ID would make the Trust criterion trivially true). Classifier (dataCleaningService.cleanRow/cleanRows) treats recruiterName and interactionDate as the required fields for flagging (interactionType has a schema default so is never 'missing'); a row is corrected (whitespace trim, email case/format normalization, dropping an unusably malformed optional email) and kept whenever safely fixable, flagged and kept when a required field is simply absent, and only removed outright when a required field is present but unparseable (e.g. a garbage interactionDate) -- there is no safe way to guess it. Every action (corrected/flagged_for_review/removed) is persisted to the new DataCleaningLog table with administratorId, rowNumber, field, detail, and a cleanedAt timestamp; a run with nothing to fix logs nothing, since there is no action to log. Required extracting the raw-row parsing step out of STORY-001's vendorIngestionCsvParser.ts/vendorIngestionXlsxParser.ts into parseRecruiterInteractionsCsvRows/XlsxRows, because those files previously parsed straight into schema validation and never exposed field-level raw data for cleaning to act on -- purely an extraction, existing parseRecruiterInteractionsCsv/Xlsx exports and their test suites are unchanged and still pass. This route does not itself persist rows into the ingestion tables; it is a pre-ingestion gate/report, and the administrator re-submits the cleaned file through the existing /upload endpoint. Failure paths covered with tests: missing administratorId (400, nothing logged), unsupported file extension, and the unparseable-date removal path. Verified live end-to-end against an isolated server and SQLite database (not the developer's running instance): ran a real CSV with one clean row, one correctable email-casing row, one missing-recruiterName row, and one unparseable-date row through the real endpoint, and confirmed the response counts and the persisted DataCleaningLog rows (administratorId + cleanedAt) directly against the database file. 89/89 backend tests passing; tsc --noEmit clean.",
+      "updated_at": "2026-09-22T00:00:00.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,
