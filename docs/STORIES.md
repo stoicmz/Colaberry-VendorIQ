@@ -1,6 +1,6 @@
 # VendorIQ — Stories
 
-14 stories across 5 releases, walking-skeleton first:
+15 stories across 5 releases, walking-skeleton first:
 the earliest release proves the thinnest end-to-end path including the trust
 spine, and later releases stack features on top of something already working.
 
@@ -22,6 +22,7 @@ system rather than a part of it.
 - **[STORY-002](stories/STORY-002.md)** — Display recruiter interaction history on dashboard
 - **[STORY-003](stories/STORY-003.md)** — Manual verification of data accuracy and attribution
 - **[STORY-014](stories/STORY-014.md)** — Ensure data is clean before ingestion
+- **[STORY-015](stories/STORY-015.md)** — Require attestation that submitted interaction data is factual _(waits on STORY-001; added 2026-09-22, not part of the original plan)_
 
 ## r1 · Red Flag Highlighting and Manual Review — weeks 1–2
 
