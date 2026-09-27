@@ -14,7 +14,7 @@ request matches its description. You can also run one directly by typing
 | **data-quality-gate** | Validates a dataset against a quality contract: PASS/WARN/FAIL per check, then PUBLISH or BLOCK | "is this file ready to publish to the dashboard?" | No, never modifies the dataset |
 | **etl-failure-triage** | Diagnoses why a data pipeline, load, or refresh failed; ranks likely causes with evidence | "why did last night's load fail?" | No, never modifies pipeline code |
 | **executive-dashboard-brief** | Turns an incident, failed refresh, or data-quality result into a short leadership update | "turn this into an update for leadership" | No, writes its answer in the chat |
-| **mvp-scoper** | Decides what to build first, and produces a plan and a one-page pitch | "what should I build first?" | **Yes: writes `project-blueprint/mvp-plan.md` and `one-pager.pdf`** |
+| **mvp-scoper** | Decides what to build first, and produces a plan and a one-page pitch | "what should I build first?" | **Yes: writes `project-blueprint/mvp-plan.md`, `mockup.html` and `one-pager.pdf`** |
 | **system-architect** | Turns a project idea into an architecture with a diagram and plain-English explanations | "design the architecture for this idea" | **Yes: writes `project-blueprint/architecture.md`** |
 
 ## Things to know
@@ -23,8 +23,8 @@ request matches its description. You can also run one directly by typing
   Never put passwords, keys, or personal data in a skill.
 - **Pre-approved commands.** A skill's `allowed-tools` line lets it run the
   listed commands without asking you. `platform-sync-check` pre-approves only
-  read-only git commands and its own script. `mvp-scoper` currently
-  pre-approves all terminal commands (`Bash`); that's under review.
+  read-only git commands and its own script. `mvp-scoper` pre-approves
+  reading and writing files but asks before any terminal command.
 - **Requirements.** `platform-sync-check` needs Python 3 (built-in modules
   only, nothing to install).
 

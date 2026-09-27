@@ -1,7 +1,7 @@
 ---
 name: mvp-scoper
 description: Use when the user wants to know what to build first, see what their idea could look like, and get a short pitch for it.
-allowed-tools: Read, Write, Bash
+allowed-tools: Read, Write
 ---
 
 # MVP Scoper
