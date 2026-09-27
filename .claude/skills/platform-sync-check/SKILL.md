@@ -9,7 +9,7 @@ description: Read-only pre-push safety check for VendorIQ. Fetches GitHub,
   updates", or mentions the Build Bot, even if they don't say "sync".
 argument-hint: "[optional: branch, default main]"
 disallowed-tools: Edit, Write, NotebookEdit
-allowed-tools: Bash(git fetch *) Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git show *) Bash(python ${CLAUDE_SKILL_DIR}/scripts/compare_progress.py *)
+allowed-tools: Bash(git fetch *) Bash(git status *) Bash(git log *) Bash(git diff *) Bash(git show *) Bash(python ${CLAUDE_SKILL_DIR}/scripts/compare_progress.py *) Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/compare_progress.py *)
 ---
 
 # Platform sync check (read-only)
@@ -36,6 +36,9 @@ you can't vouch for a remote you couldn't read. Report the error as-is.
 Run:
 
     python ${CLAUDE_SKILL_DIR}/scripts/compare_progress.py --branch <branch>
+
+If `python` isn't found (common on Mac and Linux), run the same command
+with `python3`. The script needs Python 3 and nothing else.
 
 It prints, per story, which fields differ between your copy and GitHub's,
 tagged PLATFORM-OWNED or YOURS, plus whether plan.json still matches the
