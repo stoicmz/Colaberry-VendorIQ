@@ -50,6 +50,20 @@ unverified, and it will tell you which half is missing.
    with `Story: STORY-001` on its own line below. The commit must change at least one
    file. Then push — the platform reads pushed commits, not your working tree.
 
+## Skills
+
+Project skills live in `.claude/skills/`; see `.claude/skills/README.md`
+for the full list and which ones change files. Two of them carry out the
+rules above, so use them rather than doing the steps by hand:
+
+- **finish-story**: does both steps of "When you finish a story":
+  checks each criterion against real test results, updates this story
+  in `progress.json`, commits with the `Story:` trailer, and pushes. It
+  pauses for approval before writing anything.
+- **platform-sync-check**: run before any push. Read-only; reports
+  whether Colaberry Build Bot commits have landed and gives a SAFE TO
+  PUSH / MERGE FIRST / STOP verdict.
+
 ## The `.colaberry/` files
 
 These three files are what your Command Center reads, so they have to be in your repo.
