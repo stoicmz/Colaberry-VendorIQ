@@ -1,6 +1,7 @@
 ---
 name: finish-story
-description: Closes out a VendorIQ story the way the Colaberry platform
+description: >
+  Closes out a VendorIQ story the way the Colaberry platform
   requires. Checks each acceptance criterion in docs/stories/STORY-nnn.md
   against real evidence (running the tests), records the honest result in
   .colaberry/progress.json (passed flags, files_touched, tests_added, notes)
