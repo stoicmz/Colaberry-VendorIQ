@@ -102,7 +102,7 @@ Source: `plan.derived.measures` — each entry has `id` and `statement`.
 Your plan carries no numeric target yet. Build the tab with an empty state that says so, and leave room for one card per measure.
 
 ### 3. Users and use case
-Who this is for and what they are trying to get done. Take the roles from your own stories — they are written "As a <role>, I want …". Roles in your plan: job seeker, data reviewer, product manager, compliance officer, system administrator.
+Who this is for and what they are trying to get done. Take the roles from your own stories — they are written "As a <role>, I want …". Roles in your plan: job seeker, data reviewer, product manager, compliance officer, system administrator, recruiter relying on VendorIQ.
 Source: `plan.derived.roles`, already extracted. `plan.stories[].narrative` has the full sentence each role came from, for the drill-down.
 
 ### 4. Guardrails — what must never happen
@@ -111,6 +111,7 @@ These are the promises your system makes. Show each one, and whether anything in
 - **REQ-007** — The system must ensure data is correctly attributed to the right recruiter.
 - **REQ-010** — The system must support manual data review to ensure completeness and correctness.
 - **REQ-014** — The system must ensure data is clean before ingestion.
+- **REQ-019** — The system must require job seekers to attest that submitted interaction data is factual, and must not treat unattested or disputed submissions as confirmed recruiter history without manual review.
 
 ### 5. Systems — what this connects to
 Source: `plan.derived.systems` — a list of names. That is ALL your files know about them. Whether any one of them is actually connected right now is a fact about your running system, and nothing in this repo can tell you it. Render every indicator grey and labelled "not checked from here" until your own system reports otherwise. An indicator that goes green because a name appeared in a JSON file is a lie with a colour on it.
@@ -128,7 +129,7 @@ None of these are connected on day one. The indicator must show that honestly ra
 Source: `plan.releases[]` for the bars — each carries `starts_on`, `ends_on`, `story_ids` and `is_demo_target`. `plan.schedule` has `build_start`, `build_end`, `demo_day` and `demo_release_key`. Per story, `plan.stories[].due_on` is the current date and `due_baseline_on` is the date it was FIRST given: show both, because the gap between them is slippage and a chart that quietly moves the target hides it. Status per story comes from the progress file, `stories[].verification.state`, which is one of `not_started`, `in_progress`, `submitted`, `verified`.
 A Gantt view of your releases, and under it every task with its due date. Tasks are clickable and open their own detail. Your releases:
 - **r0** Initial Data Ingestion and Display — 4 stories
-- **r1** Red Flag Highlighting and Manual Review — 3 stories
+- **r1** Red Flag Highlighting and Manual Review — 4 stories
 - **r2** Enhanced Data Display and User Guidance — 4 stories
 - **r3** User Feedback and Trial Period — 2 stories
 - **r4** Audit and Reliability Assurance — 1 story
@@ -137,7 +138,7 @@ A Gantt view of your releases, and under it every task with its due date. Tasks 
 Source: `plan.agents[]` — one card each, with `name`, `purpose`, `trigger_type`, `trigger`, `inputs`, `outputs`, `autonomy_level`, `approval_gates`, `escalation_rules`, `skills` and `owns` (the story ids it owns, which you join back to the plan and the progress file). `plan.derived.counts.agents_by_autonomy` gives you the roster breakdown without counting them yourself.
 What is NOT there: whether any agent has ever run. There is no run history, no last-run time and no success rate in these files, because none of that exists until you build the agent and it starts running. Show the design, and show "no runs recorded" — never a zero success rate, which reads as an agent that ran and failed.
 Your plan does not carry a scoped agent roster yet, so build this tab from who owns each story:
-- **Development Team** — owns STORY-001, STORY-004, STORY-005, STORY-006, STORY-007
+- **Development Team** — owns STORY-001, STORY-004, STORY-005, STORY-006, STORY-007, STORY-015
 - **Frontend Developer** — owns STORY-002
 - **Data Reviewer** — owns STORY-003, STORY-011
 - **Product Management** — owns STORY-008, STORY-009
@@ -195,6 +196,7 @@ Your full set, so the Command Center can show all of it:
 - **REQ-016** (REL, should) — The system must provide a trial period with real users to ensure reliability.
 - **REQ-017** (REL, should) — The system must gather positive user feedback to confirm reliability and ease of use.
 - **REQ-018** (OBS, should) — The system must maintain a log of manual reviews for audit purposes.
+- **REQ-019** (SAFE, must) — The system must require job seekers to attest that submitted interaction data is factual, and must not treat unattested or disputed submissions as confirmed recruiter history without manual review.
 
 ## Your stories, in build order
 **r0 · Initial Data Ingestion and Display**
@@ -206,6 +208,7 @@ Your full set, so the Command Center can show all of it:
 - STORY-004 — Highlight red flags in recruiter interactions
 - STORY-005 — Flag uncertain data for manual review
 - STORY-011 — Support manual data review for completeness and correctness
+- STORY-015 — Require attestation that submitted interaction data is factual
 **r2 · Enhanced Data Display and User Guidance**
 - STORY-006 — Display message frequency and timestamps
 - STORY-007 — Provide clear explanations of displayed data

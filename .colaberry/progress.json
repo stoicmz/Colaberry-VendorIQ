@@ -2,14 +2,14 @@
   "schema_version": 2,
   "project": "VendorIQ",
   "totals": {
-    "stories_total": 15,
-    "stories_verified": 4,
+    "stories_total": 16,
+    "stories_verified": 5,
     "stories_submitted": 0,
-    "stories_in_progress": 11,
-    "stories_not_started": 0,
+    "stories_in_progress": 10,
+    "stories_not_started": 1,
     "criteria_total": 47,
-    "criteria_passed": 14,
-    "points_awarded": 212
+    "criteria_passed": 17,
+    "points_awarded": 265
   },
   "stories": [
     {
@@ -615,19 +615,49 @@
       "notes": "Built as its own admin-run pre-ingestion stage -- POST /api/vendor-ingestion/clean -- rather than folding silently into STORY-001's /upload, since the acceptance criteria describe cleaning as an explicit action ('when I run the cleaning process') and invalid rows there were previously just dropped and reported as a string, never corrected or held for review. administratorId is a required free-text form field (same precedent as STORY-002/003: no auth system exists yet, and REQ-014 being SAFE means a placeholder ID would make the Trust criterion trivially true). Classifier (dataCleaningService.cleanRow/cleanRows) treats recruiterName and interactionDate as the required fields for flagging (interactionType has a schema default so is never 'missing'); a row is corrected (whitespace trim, email case/format normalization, dropping an unusably malformed optional email) and kept whenever safely fixable, flagged and kept when a required field is simply absent, and only removed outright when a required field is present but unparseable (e.g. a garbage interactionDate) -- there is no safe way to guess it. Every action (corrected/flagged_for_review/removed) is persisted to the new DataCleaningLog table with administratorId, rowNumber, field, detail, and a cleanedAt timestamp; a run with nothing to fix logs nothing, since there is no action to log. Required extracting the raw-row parsing step out of STORY-001's vendorIngestionCsvParser.ts/vendorIngestionXlsxParser.ts into parseRecruiterInteractionsCsvRows/XlsxRows, because those files previously parsed straight into schema validation and never exposed field-level raw data for cleaning to act on -- purely an extraction, existing parseRecruiterInteractionsCsv/Xlsx exports and their test suites are unchanged and still pass. This route does not itself persist rows into the ingestion tables; it is a pre-ingestion gate/report, and the administrator re-submits the cleaned file through the existing /upload endpoint. Failure paths covered with tests: missing administratorId (400, nothing logged), unsupported file extension, and the unparseable-date removal path. Verified live end-to-end against an isolated server and SQLite database (not the developer's running instance): ran a real CSV with one clean row, one correctable email-casing row, one missing-recruiterName row, and one unparseable-date row through the real endpoint, and confirmed the response counts and the persisted DataCleaningLog rows (administratorId + cleanedAt) directly against the database file. 89/89 backend tests passing; tsc --noEmit clean.",
       "updated_at": "2026-09-22T00:00:00.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
+        "verified_at": "2026-09-22T23:42:26.731Z",
+        "commit_sha": "23ba0f709dda47e6c2dbc4e46328ff531e145ad7",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/23ba0f709dda47e6c2dbc4e46328ff531e145ad7",
+        "commit_at": "2026-09-22T23:42:08Z",
+        "points_awarded": 53,
+        "outstanding": []
+      }
+    },
+    {
+      "id": "STORY-015",
+      "release": "r1",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given a job seeker uploads recruiter interaction data, when they submit the file, then the system requires them to attest the data is factual before any row is accepted.",
+          "passed": false
+        },
+        {
+          "text": "Given an interaction that was never attested or is later disputed, when it exists in the system, then it is routed to manual review instead of being treated as confirmed recruiter history.",
+          "passed": false
+        },
+        {
+          "text": "Trust: every attestation is logged against its submission with a timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": {
+        "state": "not_started",
+        "criteria_passed": 0,
+        "criteria_total": 0,
         "verified_at": null,
         "commit_sha": null,
         "commit_url": null,
         "commit_at": null,
         "points_awarded": null,
-        "outstanding": [
-          "Given a dataset for ingestion, when I run the cleaning process, then the system removes or corrects invalid data entries.",
-          "Given a dataset with missing fields, when I run the cleaning process, then the system flags entries with missing fields for review.",
-          "Trust: Every cleaning action is logged with the administrator ID and timestamp."
-        ]
+        "outstanding": []
       }
     }
   ]

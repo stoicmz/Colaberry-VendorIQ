@@ -22,7 +22,6 @@ system rather than a part of it.
 - **[STORY-002](stories/STORY-002.md)** — Display recruiter interaction history on dashboard
 - **[STORY-003](stories/STORY-003.md)** — Manual verification of data accuracy and attribution
 - **[STORY-014](stories/STORY-014.md)** — Ensure data is clean before ingestion
-- **[STORY-015](stories/STORY-015.md)** — Require attestation that submitted interaction data is factual _(waits on STORY-001; added 2026-09-22, not part of the original plan)_
 
 ## r1 · Red Flag Highlighting and Manual Review — weeks 1–2
 
@@ -32,6 +31,7 @@ system rather than a part of it.
 - **[STORY-004](stories/STORY-004.md)** — Highlight red flags in recruiter interactions _(waits on STORY-003)_
 - **[STORY-005](stories/STORY-005.md)** — Flag uncertain data for manual review _(waits on STORY-003)_
 - **[STORY-011](stories/STORY-011.md)** — Support manual data review for completeness and correctness _(waits on STORY-003)_
+- **[STORY-015](stories/STORY-015.md)** — Require attestation that submitted interaction data is factual
 
 ## r2 · Enhanced Data Display and User Guidance — weeks 2–3
 
