@@ -83,6 +83,11 @@ def plan_fingerprint(manifest):
 
 
 def check_plan(local_bytes, fingerprint):
+    # Absent is a normal state: deleting plan.json is how you hand it back to
+    # the platform, which writes a fresh copy on its next publish.
+    if local_bytes is None:
+        return ("absent — the platform will write a fresh copy on its next publish "
+                "(a warning, not a conflict)")
     if not fingerprint:
         return ("manifest.json has no fingerprint for plan.json, so whether the "
                 "platform manages it can't be told")
@@ -112,7 +117,9 @@ def main():
     remote_manifest = json.loads(remote(MANIFEST).decode("utf-8"))
 
     diffs = compare_progress(local_progress, remote_progress)
-    plan_status = check_plan((root / PLAN).read_bytes(), plan_fingerprint(remote_manifest))
+    plan_path = root / PLAN
+    plan_bytes = plan_path.read_bytes() if plan_path.exists() else None
+    plan_status = check_plan(plan_bytes, plan_fingerprint(remote_manifest))
 
     print(f"Compared against origin/{args.branch} "
           f"(platform data as of {remote_manifest.get('generated_at')})")
