@@ -245,7 +245,7 @@
       "acceptance_total": 3,
       "criteria": [
         {
-          "text": "Given uncertain data, when it is flagged, then I am notified for manual review.",
+          "text": "Given uncertain data, when it is flagged, then a data reviewer is notified for manual review.",
           "passed": false
         },
         {

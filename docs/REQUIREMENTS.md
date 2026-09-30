@@ -84,7 +84,7 @@ Context for the stories that use it — constraints do not get their own story.
 
 ### REQ-004 — Functional · must
 
-The system must allow job seekers to manually verify data accuracy before displaying it.
+The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.
 
 Fulfilled by: STORY-003
 

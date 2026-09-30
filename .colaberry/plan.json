@@ -38,7 +38,7 @@
       "kind": "FUNC",
       "cluster": "Data Verification",
       "priority": "must",
-      "statement": "The system must allow job seekers to manually verify data accuracy before displaying it.",
+      "statement": "The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.",
       "fulfilled_by": [
         "STORY-003"
       ]
@@ -204,9 +204,9 @@
         "STORY-003",
         "STORY-014"
       ],
-      "starts_on": "2026-10-01",
-      "ends_on": "2026-10-01",
-      "is_demo_target": true
+      "starts_on": "2026-08-20",
+      "ends_on": "2026-08-28",
+      "is_demo_target": false
     },
     {
       "key": "r1",
@@ -221,9 +221,9 @@
         "STORY-011",
         "STORY-015"
       ],
-      "starts_on": "2026-10-01",
-      "ends_on": "2026-10-01",
-      "is_demo_target": false
+      "starts_on": "2026-08-24",
+      "ends_on": "2026-09-06",
+      "is_demo_target": true
     },
     {
       "key": "r2",
@@ -238,8 +238,8 @@
         "STORY-012",
         "STORY-013"
       ],
-      "starts_on": "2026-10-01",
-      "ends_on": "2026-10-01",
+      "starts_on": "2026-09-02",
+      "ends_on": "2026-09-14",
       "is_demo_target": false
     },
     {
@@ -253,8 +253,8 @@
         "STORY-008",
         "STORY-009"
       ],
-      "starts_on": "2026-10-01",
-      "ends_on": "2026-10-01",
+      "starts_on": "2026-09-14",
+      "ends_on": "2026-09-23",
       "is_demo_target": false
     },
     {
@@ -294,7 +294,7 @@
         "File contains no data"
       ],
       "task_guidance": "Implement file upload functionality and parse CSV/XLSX data for ingestion.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-20",
       "due_baseline_on": "2026-08-20"
     },
     {
@@ -319,7 +319,7 @@
         "Interaction details fail to load."
       ],
       "task_guidance": "Implement a dashboard view that lists recruiter interactions with a clickable link to view details. Ensure navigation from dashboard to detail view is within three clicks.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-20",
       "due_baseline_on": "2026-08-20"
     },
     {
@@ -344,7 +344,7 @@
         "Reviewer ID is not logged with corrections."
       ],
       "task_guidance": "Implement a manual review interface that allows data reviewers to verify and correct recruiter attributions. Ensure that each correction is logged with the reviewer ID and timestamp.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-24",
       "due_baseline_on": "2026-08-24"
     },
     {
@@ -370,7 +370,7 @@
         "Highlighting fails"
       ],
       "task_guidance": "Implement logic to identify and highlight red flags in recruiter interactions.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-24",
       "due_baseline_on": "2026-08-26"
     },
     {
@@ -380,9 +380,9 @@
       "fulfills": [
         "REQ-005"
       ],
-      "narrative": "As a job seeker, I want uncertain data to be flagged for manual review, so that I can make informed decisions.",
+      "narrative": "As a data reviewer, I want uncertain data to be flagged for manual review, so that job seekers only see data that has been checked.",
       "acceptance": [
-        "Given uncertain data, when it is flagged, then I am notified for manual review.",
+        "Given uncertain data, when it is flagged, then a data reviewer is notified for manual review.",
         "Given certain data, when I view it, then no flag is shown.",
         "Trust: Flagging actions are logged for audit purposes."
       ],
@@ -396,7 +396,7 @@
         "Notification fails"
       ],
       "task_guidance": "Implement a system to flag uncertain data for manual review.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-28",
       "due_baseline_on": "2026-08-31"
     },
     {
@@ -422,7 +422,7 @@
         "Display fails"
       ],
       "task_guidance": "Enhance the dashboard to display message frequency and timestamps.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-02",
       "due_baseline_on": "2026-09-02"
     },
     {
@@ -448,7 +448,7 @@
         "Tooltip fails to load"
       ],
       "task_guidance": "Implement explanatory tooltips or sections on the dashboard.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-06",
       "due_baseline_on": "2026-09-06"
     },
     {
@@ -474,7 +474,7 @@
         "Report generation fails"
       ],
       "task_guidance": "Set up a feedback collection mechanism during the trial period.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-14",
       "due_baseline_on": "2026-09-14"
     },
     {
@@ -500,7 +500,7 @@
         "Improvement areas are not identified"
       ],
       "task_guidance": "Analyze user feedback to assess system reliability.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-23",
       "due_baseline_on": "2026-09-23"
     },
     {
@@ -552,7 +552,7 @@
         "Reviewer actions are not logged."
       ],
       "task_guidance": "Create a manual review process that allows data reviewers to check for completeness and correctness of data entries. Ensure that all actions are logged with reviewer ID and timestamp.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-02",
       "due_baseline_on": "2026-09-06"
     },
     {
@@ -578,7 +578,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Enhance the interaction display to show reply status for each recruiter interaction. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-10",
       "due_baseline_on": "2026-09-10"
     },
     {
@@ -604,7 +604,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Implement a display feature that shows responsiveness and follow-up patterns for recruiters. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-14",
       "due_baseline_on": "2026-09-14"
     },
     {
@@ -628,7 +628,7 @@
         "Cleaning actions are not logged."
       ],
       "task_guidance": "Develop a data cleaning process that checks for and corrects invalid data entries before ingestion. Ensure that all cleaning actions are logged with administrator ID and timestamp.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-08-28",
       "due_baseline_on": "2026-08-28"
     },
     {
@@ -647,7 +647,7 @@
       "owner_agent": "Development Team",
       "failure_paths": [],
       "task_guidance": "Author: the student (REQ-019, safety/guardrails). Attestation is captured at submission time and stored with the submission; disputed or unattested rows must never reach the confirmed-history view without manual review.",
-      "due_on": "2026-10-01",
+      "due_on": "2026-09-06",
       "due_baseline_on": "2026-10-01"
     }
   ],
@@ -656,17 +656,16 @@
     "name": "VendorIQ",
     "descriptor": "An AI-driven job-seeker protection platform that tracks recruiter and vendor behavior patterns over time.",
     "repo_url": "https://github.com/stoicmz/Colaberry-VendorIQ",
-    "plan_version": 4,
-    "plan_sha256": "98149c41f3d1fe7bd1b367dba1f51c23e8d0f22ab8e85f817b5950d88bc8e630"
+    "plan_version": 5,
+    "plan_sha256": "5bf593eb15194d8afcbdcb5b70ebff885d1ff5f092cfd43c15d0469212890ca2"
   },
   "schedule": {
-    "build_start": "2026-10-01",
+    "build_start": "2026-08-20",
     "build_end": "2026-10-01",
     "demo_day": "2026-10-08",
-    "build_weeks": 1,
-    "demo_release_key": "r0",
+    "build_weeks": 6,
+    "demo_release_key": "r1",
     "roadmap_release_keys": [
-      "r1",
       "r2",
       "r3",
       "r4"

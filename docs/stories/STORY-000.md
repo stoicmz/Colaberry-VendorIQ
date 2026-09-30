@@ -181,7 +181,7 @@ Your full set, so the Command Center can show all of it:
 - **REQ-001** (FUNC, must) — The system must ingest recruiter interaction data from a CSV/XLSX file.
 - **REQ-002** (FUNC, must) — The system must display a dashboard showing recruiter interaction history to job seekers.
 - **REQ-003** (FUNC, must) — The system must highlight red flags in recruiter interactions for manual review.
-- **REQ-004** (FUNC, must) — The system must allow job seekers to manually verify data accuracy before displaying it.
+- **REQ-004** (FUNC, must) — The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.
 - **REQ-005** (FUNC, must) — The system must flag uncertain data for manual review without making automated judgments.
 - **REQ-006** (FUNC, must) — The system must provide clear explanations of displayed data to job seekers.
 - **REQ-007** (SAFE, must) — The system must ensure data is correctly attributed to the right recruiter.

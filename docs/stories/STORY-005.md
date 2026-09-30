@@ -1,6 +1,6 @@
 # STORY-005 — Flag uncertain data for manual review
 
-As a job seeker, I want uncertain data to be flagged for manual review, so that I can make informed decisions.
+As a data reviewer, I want uncertain data to be flagged for manual review, so that job seekers only see data that has been checked.
 
 **Release:** r1 · Red Flag Highlighting and Manual Review (weeks 1–2)
 **Owner:** Development Team
@@ -27,7 +27,7 @@ the same criteria out of `.colaberry/progress.json`, which Claude Code keeps in
 step (see the managed block in CLAUDE.md). Ticking something you have not
 actually met only misleads you.
 
-- [ ] Given uncertain data, when it is flagged, then I am notified for manual review.
+- [ ] Given uncertain data, when it is flagged, then a data reviewer is notified for manual review.
 - [ ] Given certain data, when I view it, then no flag is shown.
 - [ ] Trust: Flagging actions are logged for audit purposes.
 

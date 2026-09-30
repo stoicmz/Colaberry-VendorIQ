@@ -8,7 +8,7 @@ As a data reviewer, I want to manually verify data accuracy and attribution, so 
 
 ## The requirement this satisfies
 
-- **REQ-004** (Functional, must) — The system must allow job seekers to manually verify data accuracy before displaying it.
+- **REQ-004** (Functional, must) — The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.
 - **REQ-007** (Safety, must) — The system must ensure data is correctly attributed to the right recruiter.
 
 ## How to build it
