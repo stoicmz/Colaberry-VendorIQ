@@ -5,9 +5,9 @@
     "stories_total": 16,
     "stories_verified": 5,
     "stories_submitted": 0,
-    "stories_in_progress": 10,
-    "stories_not_started": 1,
-    "criteria_total": 47,
+    "stories_in_progress": 11,
+    "stories_not_started": 0,
+    "criteria_total": 50,
     "criteria_passed": 17,
     "points_awarded": 265
   },
@@ -649,15 +649,19 @@
       "notes": null,
       "updated_at": null,
       "verification": {
-        "state": "not_started",
+        "state": "in_progress",
         "criteria_passed": 0,
-        "criteria_total": 0,
+        "criteria_total": 3,
         "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
+        "commit_sha": "86e65e3b80077138d049772b6b592edd57f1950a",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/86e65e3b80077138d049772b6b592edd57f1950a",
+        "commit_at": "2026-09-27T19:56:33Z",
         "points_awarded": null,
-        "outstanding": []
+        "outstanding": [
+          "Given a job seeker uploads recruiter interaction data, when they submit the file, then the system requires them to attest the data is factual before any row is accepted.",
+          "Given an interaction that was never attested or is later disputed, when it exists in the system, then it is routed to manual review instead of being treated as confirmed recruiter history.",
+          "Trust: every attestation is logged against its submission with a timestamp."
+        ]
       }
     }
   ]
