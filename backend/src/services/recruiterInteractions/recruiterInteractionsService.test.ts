@@ -1,6 +1,8 @@
 import { sequelize } from '../../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../../models/VendorIngestionRecord';
 import { InteractionViewLog } from '../../models/InteractionViewLog';
+import { SubmissionAttestation } from '../../models/SubmissionAttestation';
+import { HistoryReviewDecision } from '../../models/HistoryReviewDecision';
 import { getInteractionById, listInteractions } from './recruiterInteractionsService';
 
 beforeEach(async () => {
@@ -33,8 +35,43 @@ async function seedInteraction(): Promise<number> {
 }
 
 describe('listInteractions', () => {
-  it('returns an empty array when nothing has been ingested', async () => {
-    await expect(listInteractions()).resolves.toEqual([]);
+  it('returns empty lists when nothing has been ingested', async () => {
+    await expect(listInteractions()).resolves.toEqual({ confirmed: [], pendingReview: [] });
+  });
+
+  it('keeps an unattested interaction out of confirmed history (REQ-019)', async () => {
+    const id = await seedInteraction();
+
+    const history = await listInteractions();
+
+    expect(history.confirmed).toEqual([]);
+    expect(history.pendingReview.map((i) => i.id)).toEqual([id]);
+    expect(history.pendingReview[0].historyStatusReason).toBe('unattested');
+  });
+
+  it('lists an attested interaction as confirmed history', async () => {
+    const id = await seedInteraction();
+    const record = await RecruiterInteractionRecord.findByPk(id);
+    await SubmissionAttestation.create({
+      batchId: record!.batchId,
+      correlationId: 'corr',
+      attestedBy: 'seeker-ana',
+      statement: 'factual',
+      channel: 'file',
+      fileHash: null,
+    });
+
+    const history = await listInteractions();
+
+    expect(history.confirmed.map((i) => i.id)).toEqual([id]);
+    expect(history.pendingReview).toEqual([]);
+  });
+
+  it('leaves a reviewer-rejected interaction out of both lists', async () => {
+    const id = await seedInteraction();
+    await HistoryReviewDecision.create({ interactionId: id, reviewerId: 'rev-1', decision: 'rejected', note: null });
+
+    await expect(listInteractions()).resolves.toEqual({ confirmed: [], pendingReview: [] });
   });
 });
 

@@ -1,4 +1,8 @@
-import { InteractionDetail, InteractionSummary } from '../services/recruiterInteractions/recruiterInteractionsService';
+import {
+  InteractionDetail,
+  InteractionHistory,
+  InteractionSummary,
+} from '../services/recruiterInteractions/recruiterInteractionsService';
 
 function escapeHtml(value: string): string {
   return value
@@ -36,6 +40,10 @@ function layout(title: string, body: string): string {
   dl { display: grid; grid-template-columns: 10rem 1fr; row-gap: 0.5rem; }
   dt { font-weight: 600; color: #444; }
   .back { display: inline-block; margin-bottom: 1rem; }
+  h2 { font-size: 1.1rem; margin-top: 2rem; }
+  .pending { background: #fff8e6; border: 1px solid #e8cf8a; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
+  .pending h2 { margin-top: 0; }
+  .pending-note { color: #6b5200; margin: 0.25rem 0 0; }
   .review-link { display: inline-block; margin-top: 1rem; }
   form.review-form { margin-top: 1rem; display: grid; gap: 0.75rem; max-width: 28rem; }
   form.review-form label { display: grid; gap: 0.25rem; font-weight: 600; color: #444; }
@@ -49,8 +57,24 @@ ${body}
 </html>`;
 }
 
-export function renderDashboardPage(interactions: InteractionSummary[]): string {
-  const rows = interactions
+// Plain-language labels for why an interaction is, or is not, confirmed history (REQ-019).
+const STATUS_LABELS: Record<InteractionSummary['historyStatusReason'], string> = {
+  attested: 'Confirmed',
+  reviewer_confirmed: 'Confirmed by a reviewer',
+  disputed: 'Waiting for review: disputed',
+  unattested: 'Waiting for review: not attested as factual',
+  reviewer_rejected: 'Rejected by a reviewer',
+};
+
+const PENDING_REASON_LABELS: Partial<Record<InteractionSummary['historyStatusReason'], string>> = {
+  disputed: 'Disputed',
+  unattested: 'Not attested',
+};
+
+export function renderDashboardPage(history: InteractionHistory): string {
+  const { confirmed, pendingReview } = history;
+
+  const confirmedRows = confirmed
     .map(
       (i) => `<tr>
         <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a></td>
@@ -61,17 +85,45 @@ export function renderDashboardPage(interactions: InteractionSummary[]): string 
     )
     .join('\n');
 
-  const body =
-    interactions.length === 0
-      ? '<p class="empty">No recruiter interactions have been ingested yet.</p>'
-      : `<table>
+  let confirmedBody: string;
+  if (confirmed.length > 0) {
+    confirmedBody = `<table>
         <thead><tr><th>Recruiter</th><th>Company</th><th>Type</th><th>Date</th></tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody>${confirmedRows}</tbody>
       </table>`;
+  } else if (pendingReview.length > 0) {
+    confirmedBody = '<p class="empty">No confirmed recruiter interactions yet.</p>';
+  } else {
+    confirmedBody = '<p class="empty">No recruiter interactions have been ingested yet.</p>';
+  }
+
+  // Kept in its own, clearly labelled section: these are never shown as confirmed history.
+  const pendingRows = pendingReview
+    .map(
+      (i) => `<tr>
+        <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a></td>
+        <td>${escapeHtml(i.recruiterCompany ?? '—')}</td>
+        <td>${formatDate(i.interactionDate)}</td>
+        <td>${escapeHtml(PENDING_REASON_LABELS[i.historyStatusReason] ?? i.historyStatusReason)}</td>
+      </tr>`
+    )
+    .join('\n');
+
+  const pendingSection =
+    pendingReview.length === 0
+      ? ''
+      : `<section class="pending">
+        <h2>Waiting for review — not confirmed recruiter history</h2>
+        <p class="pending-note">These interactions were not attested as factual, or have been disputed. A data reviewer must check them before they count as confirmed.</p>
+        <table>
+          <thead><tr><th>Recruiter</th><th>Company</th><th>Date</th><th>Why</th></tr></thead>
+          <tbody>${pendingRows}</tbody>
+        </table>
+      </section>`;
 
   return layout(
     'Dashboard',
-    `<h1>Your Recruiter Interactions</h1>${body}`
+    `<h1>Your Recruiter Interactions</h1>${confirmedBody}${pendingSection}`
   );
 }
 
@@ -87,6 +139,7 @@ export function renderDetailPage(interaction: InteractionDetail): string {
       <dt>Channel</dt><dd>${escapeHtml(interaction.channel ?? '—')}</dd>
       <dt>Date</dt><dd>${formatDate(interaction.interactionDate)}</dd>
       <dt>Notes</dt><dd>${escapeHtml(interaction.notes ?? '—')}</dd>
+      <dt>History status</dt><dd>${escapeHtml(STATUS_LABELS[interaction.historyStatusReason])}</dd>
     </dl>
     <a class="review-link" href="/dashboard/interactions/${interaction.id}/review">Review / correct attribution &rarr;</a>`
   );

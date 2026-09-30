@@ -2,12 +2,31 @@ import { createHash } from 'crypto';
 import { sequelize } from '../../config/database';
 import { IngestionBatch, RecruiterInteractionRecord, ensureModelsSynced } from '../../models/VendorIngestionRecord';
 import { IngestionAuditLog } from '../../models/IngestionAuditLog';
+import { SubmissionAttestation } from '../../models/SubmissionAttestation';
 import { parseRecruiterInteractionsCsv } from './vendorIngestionCsvParser';
 import { parseRecruiterInteractionsXlsx } from './vendorIngestionXlsxParser';
 import { RowError } from './vendorIngestionRowValidator';
 import { RecruiterInteraction } from './vendorIngestionSchema';
 
 export type SupportedIngestionFormat = 'csv' | 'xlsx';
+
+// The wording a job seeker agrees to when submitting (REQ-019). It is copied onto every
+// SubmissionAttestation row, so changing it here never rewrites what earlier submitters attested.
+export const ATTESTATION_STATEMENT =
+  'I attest that the recruiter interaction data in this submission is factual to the best of my knowledge.';
+
+export interface AttestationInput {
+  attestedBy: string;
+}
+
+export interface AttestationSummary {
+  attestedBy: string;
+  statement: string;
+  attestedAt: Date;
+  // false when this person had already attested this submission (a retry or re-upload);
+  // the original attestation stands and no second row is written.
+  newlyRecorded: boolean;
+}
 
 export interface IngestFileResult {
   batchId: number;
@@ -17,6 +36,7 @@ export interface IngestFileResult {
   errorCount: number;
   valid: RecruiterInteraction[];
   errors: RowError[];
+  attestation: AttestationSummary;
 }
 
 export class NoDataError extends Error {
@@ -24,6 +44,17 @@ export class NoDataError extends Error {
     super('File contains no data.');
     this.name = 'NoDataError';
   }
+}
+
+export class AttestationRequiredError extends Error {
+  constructor() {
+    super('You must attest that the submitted data is factual before it can be accepted.');
+    this.name = 'AttestationRequiredError';
+  }
+}
+
+function toSummary(row: SubmissionAttestation, newlyRecorded: boolean): AttestationSummary {
+  return { attestedBy: row.attestedBy, statement: row.statement, attestedAt: row.attestedAt, newlyRecorded };
 }
 
 function hashFile(buffer: Buffer): string {
@@ -34,19 +65,43 @@ function hashFile(buffer: Buffer): string {
  * Idempotency key is the uploaded file's own content hash (translating CLAUDE.md's
  * (vendor_id, source, file_hash) dedup rule to this schema, which has no vendor_id/source
  * concept). Re-submitting the same file returns the original batch instead of re-inserting.
+ *
+ * Attestation (REQ-019) is required: without an attester nothing is parsed or stored. On a
+ * new file the attestation is written in the same transaction as the batch, so a batch can
+ * never exist without one. On a re-upload the attestation is logged against the original
+ * batch -- this is how rows ingested before attestation existed get attested -- unless the
+ * same person already attested it, in which case the original stands.
  */
 export async function ingestRecruiterInteractionsFile(
   buffer: Buffer,
   fileName: string,
   format: SupportedIngestionFormat,
-  correlationId: string
+  correlationId: string,
+  attestation: AttestationInput
 ): Promise<IngestFileResult> {
+  const attestedBy = attestation.attestedBy.trim();
+  if (attestedBy === '') {
+    throw new AttestationRequiredError();
+  }
+
   await ensureModelsSynced();
 
   const fileHash = hashFile(buffer);
 
   const existing = await IngestionBatch.findOne({ where: { fileHash } });
   if (existing) {
+    const [attestationRow, created] = await SubmissionAttestation.findOrCreate({
+      where: { batchId: existing.id, attestedBy },
+      defaults: {
+        batchId: existing.id,
+        correlationId,
+        attestedBy,
+        statement: ATTESTATION_STATEMENT,
+        channel: 'file',
+        fileHash,
+      },
+    });
+
     await IngestionAuditLog.create({
       correlationId,
       outcome: 'duplicate',
@@ -68,6 +123,7 @@ export async function ingestRecruiterInteractionsFile(
       errorCount: existing.errorCount,
       valid: [],
       errors: [],
+      attestation: toSummary(attestationRow, created),
     };
   }
 
@@ -107,7 +163,7 @@ export async function ingestRecruiterInteractionsFile(
     throw new NoDataError();
   }
 
-  const batchId = await sequelize.transaction(async (transaction) => {
+  const { batchId, attestationRow } = await sequelize.transaction(async (transaction) => {
     const createdBatch = await IngestionBatch.create(
       {
         fileHash,
@@ -151,7 +207,19 @@ export async function ingestRecruiterInteractionsFile(
       { transaction }
     );
 
-    return createdBatch.id;
+    const createdAttestation = await SubmissionAttestation.create(
+      {
+        batchId: createdBatch.id,
+        correlationId,
+        attestedBy,
+        statement: ATTESTATION_STATEMENT,
+        channel: 'file',
+        fileHash,
+      },
+      { transaction }
+    );
+
+    return { batchId: createdBatch.id, attestationRow: createdAttestation };
   });
 
   return {
@@ -162,5 +230,6 @@ export async function ingestRecruiterInteractionsFile(
     errorCount: parseResult.errors.length,
     valid: parseResult.valid,
     errors: parseResult.errors,
+    attestation: toSummary(attestationRow, true),
   };
 }

@@ -3,7 +3,11 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import { CsvParseError, parseRecruiterInteractionsCsvRows } from '../services/vendorIngestion/vendorIngestionCsvParser';
 import { XlsxParseError, parseRecruiterInteractionsXlsxRows } from '../services/vendorIngestion/vendorIngestionXlsxParser';
-import { ingestRecruiterInteractionsFile, NoDataError } from '../services/vendorIngestion/vendorIngestionService';
+import {
+  AttestationRequiredError,
+  ingestRecruiterInteractionsFile,
+  NoDataError,
+} from '../services/vendorIngestion/vendorIngestionService';
 import { RawRow } from '../services/vendorIngestion/vendorIngestionRowValidator';
 import { cleanRows, logCleaningActions } from '../services/dataCleaning/dataCleaningService';
 import { ensureModelsSynced } from '../models/VendorIngestionRecord';
@@ -79,6 +83,23 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         return;
       }
 
+      // REQ-019: the job seeker must attest the data is factual before any row is accepted.
+      // Both fields are required -- an explicit "attested=true" (a ticked checkbox) and who
+      // is attesting (free-text ID, same as reviewerId/administratorId: there is no login yet).
+      const attested = req.body?.attested === 'true';
+      const attestedBy = typeof req.body?.attestedBy === 'string' ? req.body.attestedBy.trim() : '';
+      if (!attested || !attestedBy) {
+        const message = new AttestationRequiredError().message + ' Send attested=true and attestedBy.';
+        await logRejection({
+          correlationId,
+          fileName: file.originalname,
+          format: getExtension(file.originalname) || null,
+          errorMessage: message,
+        });
+        res.status(400).json({ error: message, correlationId });
+        return;
+      }
+
       const extension = getExtension(file.originalname);
       if (!isSupportedExtension(extension)) {
         const message = `Unsupported file format ".${extension || 'unknown'}". Upload a .csv or .xlsx file.`;
@@ -92,7 +113,9 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         return;
       }
 
-      const result = await ingestRecruiterInteractionsFile(file.buffer, file.originalname, extension, correlationId);
+      const result = await ingestRecruiterInteractionsFile(file.buffer, file.originalname, extension, correlationId, {
+        attestedBy,
+      });
 
       res.status(200).json({
         correlationId,
@@ -103,9 +126,15 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         errorCount: result.errorCount,
         valid: result.valid,
         errors: result.errors,
+        attestation: result.attestation,
       });
     } catch (err) {
-      if (err instanceof NoDataError || err instanceof CsvParseError || err instanceof XlsxParseError) {
+      if (
+        err instanceof NoDataError ||
+        err instanceof CsvParseError ||
+        err instanceof XlsxParseError ||
+        err instanceof AttestationRequiredError
+      ) {
         res.status(400).json({ error: err.message, correlationId });
         return;
       }

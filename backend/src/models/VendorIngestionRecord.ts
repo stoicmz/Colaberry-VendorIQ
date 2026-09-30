@@ -12,6 +12,9 @@ import './IngestionAuditLog';
 import './InteractionViewLog';
 import './AttributionReview';
 import './DataCleaningLog';
+import './SubmissionAttestation';
+import './InteractionDispute';
+import './HistoryReviewDecision';
 
 export class IngestionBatch extends Model<InferAttributes<IngestionBatch>, InferCreationAttributes<IngestionBatch>> {
   declare id: CreationOptional<number>;

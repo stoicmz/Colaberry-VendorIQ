@@ -633,21 +633,47 @@
       "criteria": [
         {
           "text": "Given a job seeker uploads recruiter interaction data, when they submit the file, then the system requires them to attest the data is factual before any row is accepted.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given an interaction that was never attested or is later disputed, when it exists in the system, then it is routed to manual review instead of being treated as confirmed recruiter history.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: every attestation is logged against its submission with a timestamp.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/src/models/SubmissionAttestation.ts",
+        "backend/src/models/InteractionDispute.ts",
+        "backend/src/models/HistoryReviewDecision.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionService.ts",
+        "backend/src/services/historyStatus/historyStatusService.ts",
+        "backend/src/services/historyReview/historyReviewService.ts",
+        "backend/src/services/recruiterInteractions/recruiterInteractionsService.ts",
+        "backend/src/routes/vendorIngestionRoutes.ts",
+        "backend/src/routes/historyReviewRoutes.ts",
+        "backend/src/routes/recruiterInteractionRoutes.ts",
+        "backend/src/views/dashboardTemplates.ts",
+        "backend/src/index.ts",
+        ".colaberry/enrichment/STORY-015.json"
+      ],
+      "tests_added": [
+        "backend/src/models/SubmissionAttestation.test.ts",
+        "backend/src/services/historyStatus/historyStatusService.test.ts",
+        "backend/src/services/historyReview/historyReviewService.test.ts",
+        "backend/src/routes/historyReviewRoutes.test.ts",
+        "backend/src/services/vendorIngestion/vendorIngestionService.test.ts",
+        "backend/src/routes/vendorIngestionRoutes.test.ts",
+        "backend/src/services/recruiterInteractions/recruiterInteractionsService.test.ts",
+        "backend/src/routes/recruiterInteractionRoutes.test.ts",
+        "backend/src/routes/dashboardRoutes.test.ts",
+        "backend/src/views/dashboardTemplates.test.ts"
+      ],
+      "notes": "Upload (POST /api/vendor-ingestion/upload) now requires attested=true + attestedBy; the attestation is stored in the same transaction as its batch (statement, channel, timestamp) and a missing one is rejected and logged with no rows stored. History status is computed on read from attestations, disputes and reviewer decisions (open dispute > reviewer ruling > attestation); unattested (incl. all pre-STORY-015 rows) and disputed interactions go to a reviewer queue at /api/history-review and are kept out of confirmed history on the dashboard and /api/interactions. Review writes are serialised in-process because Sequelize's sqlite driver errors on overlapping transactions. 'Upload' is read as any job-seeker submission: channel 'file' now, 'form' reserved. 148/148 backend tests passing; verified live against a copy of the dev database.",
+      "updated_at": "2026-09-30T01:42:20.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,

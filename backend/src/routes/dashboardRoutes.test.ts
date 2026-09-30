@@ -4,6 +4,8 @@ import { dashboardRouter } from './dashboardRoutes';
 import { sequelize } from '../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../models/VendorIngestionRecord';
 import { InteractionViewLog } from '../models/InteractionViewLog';
+import { SubmissionAttestation } from '../models/SubmissionAttestation';
+import { disputeInteraction } from '../services/historyReview/historyReviewService';
 import * as recruiterInteractionsService from '../services/recruiterInteractions/recruiterInteractionsService';
 
 function buildApp() {
@@ -52,6 +54,31 @@ describe('GET /dashboard', () => {
     // recruiter name is HTML-escaped rather than injected raw
     expect(response.text).toContain('Jane &lt;Doe&gt;');
     expect(response.text).not.toContain('Jane <Doe>');
+  });
+
+  it('moves an interaction from confirmed history to the review section once it is disputed (REQ-019)', async () => {
+    const id = await seedInteraction();
+    const record = await RecruiterInteractionRecord.findByPk(id);
+    await SubmissionAttestation.create({
+      batchId: record!.batchId,
+      correlationId: 'corr',
+      attestedBy: 'seeker-ana',
+      statement: 'factual',
+      channel: 'file',
+      fileHash: null,
+    });
+    const reviewHeading = 'Waiting for review — not confirmed recruiter history';
+
+    const before = await request(buildApp()).get('/dashboard');
+    expect(before.text).toContain('Jane &lt;Doe&gt;');
+    expect(before.text).not.toContain(reviewHeading);
+
+    await disputeInteraction({ interactionId: id, disputedBy: 'recruiter-jane', reason: 'Never happened' });
+
+    const after = await request(buildApp()).get('/dashboard');
+    expect(after.text).toContain('No confirmed recruiter interactions yet.');
+    expect(after.text.indexOf('Jane &lt;Doe&gt;')).toBeGreaterThan(after.text.indexOf(reviewHeading));
+    expect(after.text).toContain('<td>Disputed</td>');
   });
 
   it('shows an empty state instead of an error when there is no data yet', async () => {

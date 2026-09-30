@@ -2,7 +2,15 @@ import { randomUUID } from 'crypto';
 import { sequelize } from '../../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../../models/VendorIngestionRecord';
 import { IngestionAuditLog } from '../../models/IngestionAuditLog';
-import { ingestRecruiterInteractionsFile, NoDataError } from './vendorIngestionService';
+import { SubmissionAttestation } from '../../models/SubmissionAttestation';
+import {
+  ATTESTATION_STATEMENT,
+  AttestationRequiredError,
+  ingestRecruiterInteractionsFile,
+  NoDataError,
+} from './vendorIngestionService';
+
+const ATTESTED = { attestedBy: 'seeker-ana' };
 
 beforeEach(async () => {
   await sequelize.sync({ force: true });
@@ -20,7 +28,7 @@ describe('ingestRecruiterInteractionsFile', () => {
       'John Smith,john@example.com,2026-08-02,call',
     ].join('\n');
 
-    const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', randomUUID());
+    const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', randomUUID(), ATTESTED);
 
     expect(result.duplicate).toBe(false);
     expect(result.validCount).toBe(2);
@@ -37,7 +45,7 @@ describe('ingestRecruiterInteractionsFile', () => {
   it('does not persist rows that failed row-level validation', async () => {
     const csv = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01', ',2026-08-02'].join('\n');
 
-    const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', randomUUID());
+    const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', randomUUID(), ATTESTED);
 
     expect(result.validCount).toBe(1);
     expect(result.errorCount).toBe(1);
@@ -53,8 +61,8 @@ describe('ingestRecruiterInteractionsFile', () => {
     ].join('\n');
     const buffer = Buffer.from(csv);
 
-    const first = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID());
-    const second = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID());
+    const first = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID(), ATTESTED);
+    const second = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID(), ATTESTED);
 
     expect(first.duplicate).toBe(false);
     expect(second.duplicate).toBe(true);
@@ -71,8 +79,8 @@ describe('ingestRecruiterInteractionsFile', () => {
     const csvA = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01'].join('\n');
     const csvB = ['recruiterName,interactionDate', 'John Smith,2026-08-02'].join('\n');
 
-    const first = await ingestRecruiterInteractionsFile(Buffer.from(csvA), 'a.csv', 'csv', randomUUID());
-    const second = await ingestRecruiterInteractionsFile(Buffer.from(csvB), 'b.csv', 'csv', randomUUID());
+    const first = await ingestRecruiterInteractionsFile(Buffer.from(csvA), 'a.csv', 'csv', randomUUID(), ATTESTED);
+    const second = await ingestRecruiterInteractionsFile(Buffer.from(csvB), 'b.csv', 'csv', randomUUID(), ATTESTED);
 
     expect(second.duplicate).toBe(false);
     expect(second.batchId).not.toBe(first.batchId);
@@ -84,7 +92,7 @@ describe('ingestRecruiterInteractionsFile', () => {
   it('throws NoDataError instead of persisting an empty batch', async () => {
     const csv = 'recruiterName,interactionDate';
 
-    await expect(ingestRecruiterInteractionsFile(Buffer.from(csv), 'empty.csv', 'csv', randomUUID())).rejects.toThrow(
+    await expect(ingestRecruiterInteractionsFile(Buffer.from(csv), 'empty.csv', 'csv', randomUUID(), ATTESTED)).rejects.toThrow(
       NoDataError
     );
 
@@ -97,7 +105,7 @@ describe('ingestRecruiterInteractionsFile', () => {
       const csv = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01'].join('\n');
       const correlationId = randomUUID();
 
-      const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', correlationId);
+      const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'interactions.csv', 'csv', correlationId, ATTESTED);
 
       const entries = await IngestionAuditLog.findAll({ where: { correlationId } });
       expect(entries).toHaveLength(1);
@@ -110,9 +118,9 @@ describe('ingestRecruiterInteractionsFile', () => {
       const csv = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01'].join('\n');
       const buffer = Buffer.from(csv);
 
-      const first = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID());
+      const first = await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', randomUUID(), ATTESTED);
       const duplicateCorrelationId = randomUUID();
-      await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', duplicateCorrelationId);
+      await ingestRecruiterInteractionsFile(buffer, 'interactions.csv', 'csv', duplicateCorrelationId, ATTESTED);
 
       const duplicateEntries = await IngestionAuditLog.findAll({ where: { correlationId: duplicateCorrelationId } });
       expect(duplicateEntries).toHaveLength(1);
@@ -127,7 +135,7 @@ describe('ingestRecruiterInteractionsFile', () => {
       const correlationId = randomUUID();
 
       await expect(
-        ingestRecruiterInteractionsFile(Buffer.from('recruiterName,interactionDate'), 'empty.csv', 'csv', correlationId)
+        ingestRecruiterInteractionsFile(Buffer.from('recruiterName,interactionDate'), 'empty.csv', 'csv', correlationId, ATTESTED)
       ).rejects.toThrow(NoDataError);
 
       const entries = await IngestionAuditLog.findAll({ where: { correlationId } });
@@ -142,13 +150,65 @@ describe('ingestRecruiterInteractionsFile', () => {
       const malformed = '"unterminated quote,recruiterName\n"Jane';
 
       await expect(
-        ingestRecruiterInteractionsFile(Buffer.from(malformed), 'bad.csv', 'csv', correlationId)
+        ingestRecruiterInteractionsFile(Buffer.from(malformed), 'bad.csv', 'csv', correlationId, ATTESTED)
       ).rejects.toThrow();
 
       const entries = await IngestionAuditLog.findAll({ where: { correlationId } });
       expect(entries).toHaveLength(1);
       expect(entries[0].outcome).toBe('rejected');
       expect(entries[0].batchId).toBeNull();
+    });
+  });
+
+  describe('attestation (REQ-019)', () => {
+    const csv = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01'].join('\n');
+
+    it('records the attestation against the new batch, with the statement and a timestamp', async () => {
+      const correlationId = randomUUID();
+      const result = await ingestRecruiterInteractionsFile(Buffer.from(csv), 'i.csv', 'csv', correlationId, ATTESTED);
+
+      expect(result.attestation.newlyRecorded).toBe(true);
+      const rows = await SubmissionAttestation.findAll({ where: { batchId: result.batchId } });
+      expect(rows).toHaveLength(1);
+      expect(rows[0].attestedBy).toBe('seeker-ana');
+      expect(rows[0].statement).toBe(ATTESTATION_STATEMENT);
+      expect(rows[0].channel).toBe('file');
+      expect(rows[0].correlationId).toBe(correlationId);
+      expect(rows[0].attestedAt).toBeInstanceOf(Date);
+    });
+
+    it('accepts no rows and writes nothing when the attester is blank', async () => {
+      await expect(
+        ingestRecruiterInteractionsFile(Buffer.from(csv), 'i.csv', 'csv', randomUUID(), { attestedBy: '   ' })
+      ).rejects.toThrow(AttestationRequiredError);
+
+      expect(await IngestionBatch.count()).toBe(0);
+      expect(await RecruiterInteractionRecord.count()).toBe(0);
+      expect(await SubmissionAttestation.count()).toBe(0);
+    });
+
+    it('logs a re-upload attestation against the original batch without re-ingesting rows', async () => {
+      const buffer = Buffer.from(csv);
+      const first = await ingestRecruiterInteractionsFile(buffer, 'i.csv', 'csv', randomUUID(), ATTESTED);
+      const second = await ingestRecruiterInteractionsFile(buffer, 'i.csv', 'csv', randomUUID(), {
+        attestedBy: 'seeker-ben',
+      });
+
+      expect(second.duplicate).toBe(true);
+      expect(second.attestation.newlyRecorded).toBe(true);
+      const rows = await SubmissionAttestation.findAll({ where: { batchId: first.batchId }, order: [['id', 'ASC']] });
+      expect(rows.map((row) => row.attestedBy)).toEqual(['seeker-ana', 'seeker-ben']);
+      expect(await RecruiterInteractionRecord.count()).toBe(1);
+    });
+
+    it('does not double-record when the same person re-submits the same file', async () => {
+      const buffer = Buffer.from(csv);
+      const first = await ingestRecruiterInteractionsFile(buffer, 'i.csv', 'csv', randomUUID(), ATTESTED);
+      const retry = await ingestRecruiterInteractionsFile(buffer, 'i.csv', 'csv', randomUUID(), ATTESTED);
+
+      expect(retry.attestation.newlyRecorded).toBe(false);
+      expect(retry.attestation.attestedAt).toEqual(first.attestation.attestedAt);
+      expect(await SubmissionAttestation.count()).toBe(1);
     });
   });
 });

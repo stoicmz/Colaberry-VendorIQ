@@ -2,6 +2,7 @@ import express from 'express';
 import { vendorIngestionRouter } from './routes/vendorIngestionRoutes';
 import { recruiterInteractionRouter } from './routes/recruiterInteractionRoutes';
 import { dashboardRouter } from './routes/dashboardRoutes';
+import { historyReviewRouter } from './routes/historyReviewRoutes';
 import { ensureModelsSynced } from './models/VendorIngestionRecord';
 
 export function buildApp(): express.Express {
@@ -10,6 +11,7 @@ export function buildApp(): express.Express {
   app.use(express.urlencoded({ extended: false }));
   app.use('/api/vendor-ingestion', vendorIngestionRouter);
   app.use('/api/interactions', recruiterInteractionRouter);
+  app.use('/api/history-review', historyReviewRouter);
   app.use('/dashboard', dashboardRouter);
   return app;
 }

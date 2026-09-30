@@ -3,6 +3,7 @@ import request from 'supertest';
 import { recruiterInteractionRouter } from './recruiterInteractionRoutes';
 import { sequelize } from '../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../models/VendorIngestionRecord';
+import { SubmissionAttestation } from '../models/SubmissionAttestation';
 
 function buildApp() {
   const app = express();
@@ -18,7 +19,10 @@ afterAll(async () => {
   await sequelize.close();
 });
 
-async function seedInteraction(overrides: Partial<{ recruiterName: string; interactionDate: Date }> = {}) {
+// Seeds an attested interaction by default -- i.e. confirmed history under REQ-019.
+async function seedInteraction(
+  overrides: Partial<{ recruiterName: string; interactionDate: Date; attested: boolean }> = {}
+) {
   const batch = await IngestionBatch.create({
     fileHash: `hash-${Date.now()}-${Math.random()}`,
     fileName: 'interactions.csv',
@@ -26,6 +30,16 @@ async function seedInteraction(overrides: Partial<{ recruiterName: string; inter
     validCount: 1,
     errorCount: 0,
   });
+  if (overrides.attested ?? true) {
+    await SubmissionAttestation.create({
+      batchId: batch.id,
+      correlationId: 'corr',
+      attestedBy: 'seeker-ana',
+      statement: 'factual',
+      channel: 'file',
+      fileHash: null,
+    });
+  }
   return RecruiterInteractionRecord.create({
     batchId: batch.id,
     recruiterName: overrides.recruiterName ?? 'Jane Doe',
@@ -57,6 +71,21 @@ describe('GET /api/interactions', () => {
 
     expect(response.status).toBe(200);
     expect(response.body.interactions).toEqual([]);
+    expect(response.body.pendingReview).toEqual([]);
+  });
+
+  it('returns an unattested interaction under pendingReview, never under interactions (REQ-019)', async () => {
+    await seedInteraction({ recruiterName: 'Confirmed Recruiter' });
+    await seedInteraction({ recruiterName: 'Unattested Recruiter', attested: false });
+
+    const response = await request(buildApp()).get('/api/interactions');
+
+    expect(response.body.interactions.map((i: { recruiterName: string }) => i.recruiterName)).toEqual([
+      'Confirmed Recruiter',
+    ]);
+    expect(response.body.pendingReview).toHaveLength(1);
+    expect(response.body.pendingReview[0].recruiterName).toBe('Unattested Recruiter');
+    expect(response.body.pendingReview[0].historyStatusReason).toBe('unattested');
   });
 });
 

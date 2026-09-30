@@ -4,6 +4,9 @@ import ExcelJS from 'exceljs';
 import { vendorIngestionRouter } from './vendorIngestionRoutes';
 import { sequelize } from '../config/database';
 import { IngestionAuditLog } from '../models/IngestionAuditLog';
+import { IngestionBatch, RecruiterInteractionRecord } from '../models/VendorIngestionRecord';
+import { SubmissionAttestation } from '../models/SubmissionAttestation';
+import { ATTESTATION_STATEMENT } from '../services/vendorIngestion/vendorIngestionService';
 
 function buildApp() {
   const app = express();
@@ -37,6 +40,8 @@ describe('POST /api/vendor-ingestion/upload', () => {
 
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from(csv), 'interactions.csv');
 
     expect(response.status).toBe(200);
@@ -63,9 +68,13 @@ describe('POST /api/vendor-ingestion/upload', () => {
     const app = buildApp();
     const first = await request(app)
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from(csv), 'interactions.csv');
     const second = await request(app)
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from(csv), 'interactions.csv');
 
     expect(first.body.duplicate).toBe(false);
@@ -86,6 +95,8 @@ describe('POST /api/vendor-ingestion/upload', () => {
 
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', buffer, 'interactions.xlsx');
 
     expect(response.status).toBe(200);
@@ -97,6 +108,8 @@ describe('POST /api/vendor-ingestion/upload', () => {
   it('rejects an unsupported file format with an error message, and logs the rejection', async () => {
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from('just some text'), 'interactions.txt');
 
     expect(response.status).toBe(400);
@@ -114,6 +127,8 @@ describe('POST /api/vendor-ingestion/upload', () => {
 
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from(malformed), 'interactions.csv');
 
     expect(response.status).toBe(400);
@@ -125,6 +140,8 @@ describe('POST /api/vendor-ingestion/upload', () => {
 
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', garbage, 'interactions.xlsx');
 
     expect(response.status).toBe(400);
@@ -136,10 +153,57 @@ describe('POST /api/vendor-ingestion/upload', () => {
 
     const response = await request(buildApp())
       .post('/api/vendor-ingestion/upload')
+      .field('attested', 'true')
+      .field('attestedBy', 'seeker-ana')
       .attach('file', Buffer.from(csv), 'interactions.csv');
 
     expect(response.status).toBe(400);
     expect(response.body.error).toMatch(/no data/i);
+  });
+
+  describe('attestation (REQ-019 / STORY-015)', () => {
+    const csv = ['recruiterName,interactionDate', 'Jane Doe,2026-08-01'].join('\n');
+
+    it('accepts an attested upload and logs the attestation against the batch with a timestamp', async () => {
+      const response = await request(buildApp())
+        .post('/api/vendor-ingestion/upload')
+        .field('attested', 'true')
+        .field('attestedBy', 'seeker-ana')
+        .attach('file', Buffer.from(csv), 'interactions.csv');
+
+      expect(response.status).toBe(200);
+      expect(response.body.attestation.attestedBy).toBe('seeker-ana');
+      expect(response.body.attestation.statement).toBe(ATTESTATION_STATEMENT);
+      expect(response.body.attestation.attestedAt).toBeDefined();
+
+      const attestations = await SubmissionAttestation.findAll({ where: { batchId: response.body.batchId } });
+      expect(attestations).toHaveLength(1);
+      expect(attestations[0].correlationId).toBe(response.body.correlationId);
+    });
+
+    it.each([
+      ['no attestation fields at all', {}],
+      ['attested is not "true"', { attested: 'false', attestedBy: 'seeker-ana' }],
+      ['no attestedBy', { attested: 'true' }],
+      ['a blank attestedBy', { attested: 'true', attestedBy: '   ' }],
+    ])('rejects the upload and accepts no rows when there is %s', async (_label, fields: Record<string, string>) => {
+      let req = request(buildApp()).post('/api/vendor-ingestion/upload');
+      for (const [name, value] of Object.entries(fields)) {
+        req = req.field(name, value);
+      }
+      const response = await req.attach('file', Buffer.from(csv), 'interactions.csv');
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toMatch(/attest/i);
+      expect(await IngestionBatch.count()).toBe(0);
+      expect(await RecruiterInteractionRecord.count()).toBe(0);
+      expect(await SubmissionAttestation.count()).toBe(0);
+
+      const auditEntries = await IngestionAuditLog.findAll({ where: { correlationId: response.body.correlationId } });
+      expect(auditEntries).toHaveLength(1);
+      expect(auditEntries[0].outcome).toBe('rejected');
+      expect(auditEntries[0].fileName).toBe('interactions.csv');
+    });
   });
 
   it('rejects a request with no file attached, and logs the rejection', async () => {

@@ -5,8 +5,10 @@ export const recruiterInteractionRouter = Router();
 
 recruiterInteractionRouter.get('/', async (_req: Request, res: Response) => {
   try {
-    const interactions = await listInteractions();
-    res.status(200).json({ interactions });
+    // `interactions` is confirmed recruiter history only (REQ-019); anything not attested or
+    // disputed is returned separately so a client cannot mistake it for confirmed history.
+    const history = await listInteractions();
+    res.status(200).json({ interactions: history.confirmed, pendingReview: history.pendingReview });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('Failed to load recruiter interactions', err);

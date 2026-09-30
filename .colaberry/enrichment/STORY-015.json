@@ -1,0 +1,113 @@
+{
+  "schemaVersion": "1",
+  "projectId": "24af54b7-d7d5-4261-b2e8-f4fbea576df3",
+  "storyId": "STORY-015",
+  "projectTruthBaseRevision": 0,
+  "observedAt": "2026-09-30T01:37:04Z",
+  "sourceCommitSha": null,
+  "factProposals": [
+    {
+      "dimension": "inputs",
+      "value": "An interaction-data upload is accepted only with attested=true and a non-blank attestedBy; without both it is rejected with 400, the rejection is written to the ingestion audit log, and no rows are stored.",
+      "evidence": "backend/src/routes/vendorIngestionRoutes.ts#L90"
+    },
+    {
+      "dimension": "data",
+      "value": "Three new tables: submission_attestations (who attested which submission, the exact statement, channel, timestamp), interaction_disputes (who disputed an interaction and why), and history_review_decisions (a reviewer's confirmed/rejected ruling). No existing table was altered.",
+      "evidence": "backend/src/models/SubmissionAttestation.ts"
+    },
+    {
+      "dimension": "outputs",
+      "value": "Recruiter history is now split in both job-seeker views: the dashboard's main table and GET /api/interactions `interactions` contain confirmed interactions only; unattested or disputed ones appear separately under 'Waiting for review — not confirmed recruiter history' / `pendingReview`. Reviewer-rejected interactions appear in neither.",
+      "evidence": "backend/src/services/recruiterInteractions/recruiterInteractionsService.ts"
+    },
+    {
+      "dimension": "approval_points",
+      "value": "An unattested or disputed interaction becomes confirmed recruiter history only when a data reviewer records a 'confirmed' decision with a reviewer ID; that decision also closes the interaction's open disputes.",
+      "evidence": "backend/src/services/historyReview/historyReviewService.ts"
+    },
+    {
+      "dimension": "human_only_decisions",
+      "value": "Whether a disputed or unattested interaction is factual is decided only by a data reviewer. The system never judges truth automatically; it only routes the interaction to the review queue.",
+      "evidence": "backend/src/services/historyStatus/historyStatusService.ts#L32"
+    },
+    {
+      "dimension": "actors",
+      "value": "Anyone who disputes an interaction (for example the recruiter it names) is recorded by a free-text disputedBy ID. Review rulings are made by a data reviewer, not the job seeker; this differs from REQ-004's wording, which says job seekers manually verify data accuracy.",
+      "evidence": "backend/src/routes/historyReviewRoutes.ts"
+    },
+    {
+      "dimension": "exceptions",
+      "value": "A reviewer ruling on an interaction that is not waiting for review is refused with 409 and its current status, so a double submission or stale queue cannot overwrite an earlier ruling.",
+      "evidence": "backend/src/services/historyReview/historyReviewService.ts#L142"
+    }
+  ],
+  "decisions": [
+    {
+      "statement": "Attestation is attached to the submission, not the file, and records a channel: 'file' today, with 'form' reserved.",
+      "rationale": "The student interprets 'upload' as any job-seeker submission; an in-app question form is planned as a later addition and must reuse the same attestation record.",
+      "evidence": "backend/src/models/SubmissionAttestation.ts"
+    },
+    {
+      "statement": "At most one attestation per person per submission, enforced by a unique index on (batchId, attestedBy).",
+      "rationale": "A retried or repeated upload must not create a second attestation (idempotent side effects).",
+      "evidence": "backend/src/models/SubmissionAttestation.ts#L47"
+    },
+    {
+      "statement": "Re-uploading a file that is already ingested, with attestation, logs the attestation against the original batch and so confirms its rows.",
+      "rationale": "Student's decision; it gives interactions ingested before attestation existed a way to be attested without re-ingesting them.",
+      "evidence": "backend/src/services/vendorIngestion/vendorIngestionService.ts#L93"
+    },
+    {
+      "statement": "Interactions ingested before STORY-015 are treated as unattested and routed to manual review.",
+      "rationale": "Student's decision, following REQ-019: they were never attested, so they cannot count as confirmed history.",
+      "evidence": "backend/src/services/historyStatus/historyStatusService.ts#L32"
+    },
+    {
+      "statement": "History status is computed when read from attestations, disputes and decisions, not stored on the interaction row.",
+      "rationale": "It cannot drift from the facts it is based on, and it avoids altering an existing table, which sequelize.sync() would not migrate.",
+      "evidence": "backend/src/services/historyStatus/historyStatusService.ts"
+    },
+    {
+      "statement": "Precedence: an open dispute beats any reviewer decision, a reviewer decision beats the attestation, and a missing attestation means manual review.",
+      "rationale": "Nothing disputed can show as confirmed until a human rules on it, and a human ruling outranks the submitter's own attestation either way.",
+      "evidence": "backend/src/services/historyStatus/historyStatusService.ts#L32"
+    },
+    {
+      "statement": "Dispute and review writes are serialised by an in-process queue rather than SQLite IMMEDIATE transactions.",
+      "rationale": "Sequelize's sqlite driver errors on overlapping transactions instead of queueing them; concurrent-submission tests failed with IMMEDIATE and pass with the queue.",
+      "evidence": "backend/src/services/historyReview/historyReviewService.ts#L39"
+    }
+  ],
+  "limitations": [
+    {
+      "statement": "The write queue only serialises within one Node process; several server processes sharing one database would need a database-level guard against duplicate disputes or decisions.",
+      "evidence": "backend/src/services/historyReview/historyReviewService.ts#L39"
+    },
+    {
+      "statement": "There is no authentication: attestedBy, disputedBy and reviewerId are unverified free-text IDs, so an attestation proves an ID was entered, not who entered it.",
+      "evidence": "backend/src/routes/vendorIngestionRoutes.ts#L90"
+    },
+    {
+      "statement": "The review queue and the history views load every interaction to work out its status; they will need paging as the table grows.",
+      "evidence": "backend/src/services/historyReview/historyReviewService.ts#L179"
+    },
+    {
+      "statement": "Only the file-upload channel exists; job seekers cannot yet submit interactions through an in-app form.",
+      "evidence": "backend/src/models/SubmissionAttestation.ts"
+    }
+  ],
+  "demonstrationEvidence": [
+    { "kind": "test", "ref": "backend/src/models/SubmissionAttestation.test.ts" },
+    { "kind": "test", "ref": "backend/src/services/vendorIngestion/vendorIngestionService.test.ts" },
+    { "kind": "test", "ref": "backend/src/routes/vendorIngestionRoutes.test.ts" },
+    { "kind": "test", "ref": "backend/src/services/historyStatus/historyStatusService.test.ts" },
+    { "kind": "test", "ref": "backend/src/services/historyReview/historyReviewService.test.ts" },
+    { "kind": "test", "ref": "backend/src/routes/historyReviewRoutes.test.ts" },
+    { "kind": "test", "ref": "backend/src/services/recruiterInteractions/recruiterInteractionsService.test.ts" },
+    { "kind": "test", "ref": "backend/src/routes/recruiterInteractionRoutes.test.ts" },
+    { "kind": "test", "ref": "backend/src/routes/dashboardRoutes.test.ts" },
+    { "kind": "test", "ref": "backend/src/views/dashboardTemplates.test.ts" }
+  ],
+  "measurementEvents": []
+}
