@@ -3,13 +3,13 @@
   "project": "VendorIQ",
   "totals": {
     "stories_total": 16,
-    "stories_verified": 6,
+    "stories_verified": 7,
     "stories_submitted": 0,
-    "stories_in_progress": 10,
+    "stories_in_progress": 9,
     "stories_not_started": 0,
     "criteria_total": 50,
-    "criteria_passed": 20,
-    "points_awarded": 315
+    "criteria_passed": 23,
+    "points_awarded": 365
   },
   "stories": [
     {
@@ -239,19 +239,15 @@
       "notes": "Four fixed, factual, versioned red-flag rules (payment/personal-data phrases in notes, personal email domain while a company is named, same email under different companies, offer with no earlier interview), worked out when the data is read and highlighted 'for review' without hiding anything or scoring recruiters (REQ-015); each identification is logged once to red_flag_logs, a failed check shows a 'check unavailable' notice, and if only the audit write fails the flags still show and are logged on the next load. Known limits: phrase matching ignores negation ('no fee') and is English-only, company names aren't normalised beyond case and spacing, and R2 also flags legitimate independent recruiters who use personal email.",
       "updated_at": "2026-10-01T00:22:44.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given ingested data, when red flags are identified, then they are highlighted on the dashboard.",
-          "Given no red flags, when I view the dashboard, then no highlights are shown.",
-          "Trust: Red flag identification is logged for audit purposes."
-        ]
+        "verified_at": "2026-10-01T00:28:44.079Z",
+        "commit_sha": "02c4cec6bcd42e50033e477f7b9c4d5b957f1e00",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/02c4cec6bcd42e50033e477f7b9c4d5b957f1e00",
+        "commit_at": "2026-10-01T00:28:22Z",
+        "points_awarded": 50,
+        "outstanding": []
       }
     },
     {
@@ -286,7 +282,7 @@
         "commit_at": null,
         "points_awarded": null,
         "outstanding": [
-          "Given uncertain data, when it is flagged, then I am notified for manual review.",
+          "Given uncertain data, when it is flagged, then a data reviewer is notified for manual review.",
           "Given certain data, when I view it, then no flag is shown.",
           "Trust: Flagging actions are logged for audit purposes."
         ]
