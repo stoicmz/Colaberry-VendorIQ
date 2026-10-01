@@ -4,6 +4,7 @@ import { InteractionViewLog } from '../../models/InteractionViewLog';
 import { SubmissionAttestation } from '../../models/SubmissionAttestation';
 import { HistoryReviewDecision } from '../../models/HistoryReviewDecision';
 import { getInteractionById, listInteractions } from './recruiterInteractionsService';
+import * as redFlagService from '../redFlags/redFlagService';
 
 beforeEach(async () => {
   await sequelize.sync({ force: true });
@@ -93,5 +94,29 @@ describe('getInteractionById', () => {
     expect(logs).toHaveLength(2);
     expect(logs[0].viewedAt).toBeInstanceOf(Date);
     expect(logs[1].viewedAt).toBeInstanceOf(Date);
+  });
+});
+
+describe('red flags (STORY-004)', () => {
+  it('attaches an empty red flag list to clean interactions in the list and the detail', async () => {
+    const id = await seedInteraction();
+
+    const history = await listInteractions();
+    const detail = await getInteractionById(id);
+
+    expect(history.pendingReview[0].redFlags).toEqual([]);
+    expect(detail!.redFlags).toEqual([]);
+  });
+
+  it('marks red flags as null (check unavailable) when the check fails, and still returns the interaction', async () => {
+    const id = await seedInteraction();
+    jest.spyOn(redFlagService, 'identifyRedFlags').mockResolvedValue(null);
+
+    const history = await listInteractions();
+    const detail = await getInteractionById(id);
+
+    expect(history.pendingReview.map((i) => [i.id, i.redFlags])).toEqual([[id, null]]);
+    expect(detail!.redFlags).toBeNull();
+    jest.restoreAllMocks();
   });
 });

@@ -49,6 +49,11 @@ function layout(title: string, body: string): string {
   form.review-form label { display: grid; gap: 0.25rem; font-weight: 600; color: #444; }
   form.review-form input { padding: 0.4rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
   form.review-form button { justify-self: start; padding: 0.5rem 1.25rem; background: #0b5fff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+  .red-flag-badge { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; font-size: 0.8rem; color: #8a1c1c; background: #fdeaea; border: 1px solid #e0a0a0; border-radius: 999px; }
+  .red-flags { background: #fdeaea; border: 1px solid #e0a0a0; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
+  .red-flags h2 { margin-top: 0; }
+  .red-flags-note { color: #6b1a1a; margin: 0.25rem 0 0.5rem; }
+  .check-unavailable { background: #fff8e6; border: 1px solid #e8cf8a; color: #6b5200; padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0; }
 </style>
 </head>
 <body>
@@ -71,13 +76,46 @@ const PENDING_REASON_LABELS: Partial<Record<InteractionSummary['historyStatusRea
   unattested: 'Not attested',
 };
 
+// STORY-004: red flags are observations for a person to check, never a verdict (REQ-015).
+// A null list means the check could not run -- say so, rather than letting the page look clean.
+const RED_FLAG_CHECK_UNAVAILABLE =
+  '<p class="check-unavailable">Red flag check is unavailable right now, so these interactions have not been checked. Try again shortly.</p>';
+
+function redFlagBadge(i: InteractionSummary): string {
+  if (!i.redFlags || i.redFlags.length === 0) {
+    return '';
+  }
+  const count = i.redFlags.length === 1 ? '1 red flag' : `${i.redFlags.length} red flags`;
+  return ` <span class="red-flag-badge">&#9873; ${count} · for review</span>`;
+}
+
+function redFlagPanel(interaction: InteractionDetail): string {
+  if (interaction.redFlags === null) {
+    return RED_FLAG_CHECK_UNAVAILABLE;
+  }
+  if (interaction.redFlags.length === 0) {
+    return '';
+  }
+  const items = interaction.redFlags
+    .map((flag) => `<li><strong>${escapeHtml(flag.description)}</strong> — ${escapeHtml(flag.evidence)}</li>`)
+    .join('\n');
+  return `<section class="red-flags">
+      <h2>Red flags — for your review</h2>
+      <p class="red-flags-note">These are observations from the data, not a judgment of the recruiter. Check them before acting.</p>
+      <ul>${items}</ul>
+    </section>`;
+}
+
 export function renderDashboardPage(history: InteractionHistory): string {
   const { confirmed, pendingReview } = history;
+  const checkUnavailable = [...confirmed, ...pendingReview].some((i) => i.redFlags === null)
+    ? RED_FLAG_CHECK_UNAVAILABLE
+    : '';
 
   const confirmedRows = confirmed
     .map(
       (i) => `<tr>
-        <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a></td>
+        <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a>${redFlagBadge(i)}</td>
         <td>${escapeHtml(i.recruiterCompany ?? '—')}</td>
         <td>${escapeHtml(i.interactionType)}</td>
         <td>${formatDate(i.interactionDate)}</td>
@@ -101,7 +139,7 @@ export function renderDashboardPage(history: InteractionHistory): string {
   const pendingRows = pendingReview
     .map(
       (i) => `<tr>
-        <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a></td>
+        <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a>${redFlagBadge(i)}</td>
         <td>${escapeHtml(i.recruiterCompany ?? '—')}</td>
         <td>${formatDate(i.interactionDate)}</td>
         <td>${escapeHtml(PENDING_REASON_LABELS[i.historyStatusReason] ?? i.historyStatusReason)}</td>
@@ -123,7 +161,7 @@ export function renderDashboardPage(history: InteractionHistory): string {
 
   return layout(
     'Dashboard',
-    `<h1>Your Recruiter Interactions</h1>${confirmedBody}${pendingSection}`
+    `<h1>Your Recruiter Interactions</h1>${checkUnavailable}${confirmedBody}${pendingSection}`
   );
 }
 
@@ -141,6 +179,7 @@ export function renderDetailPage(interaction: InteractionDetail): string {
       <dt>Notes</dt><dd>${escapeHtml(interaction.notes ?? '—')}</dd>
       <dt>History status</dt><dd>${escapeHtml(STATUS_LABELS[interaction.historyStatusReason])}</dd>
     </dl>
+    ${redFlagPanel(interaction)}
     <a class="review-link" href="/dashboard/interactions/${interaction.id}/review">Review / correct attribution &rarr;</a>`
   );
 }

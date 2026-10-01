@@ -4,6 +4,8 @@ import { dashboardRouter } from './dashboardRoutes';
 import { sequelize } from '../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../models/VendorIngestionRecord';
 import { InteractionViewLog } from '../models/InteractionViewLog';
+import { RedFlagLog } from '../models/RedFlagLog';
+import * as redFlagRules from '../services/redFlags/redFlagRules';
 import { SubmissionAttestation } from '../models/SubmissionAttestation';
 import { disputeInteraction } from '../services/historyReview/historyReviewService';
 import * as recruiterInteractionsService from '../services/recruiterInteractions/recruiterInteractionsService';
@@ -146,5 +148,89 @@ describe('GET /dashboard/interactions/:id', () => {
 
     expect(response.status).toBe(500);
     expect(response.text).toContain('Interaction detail unavailable');
+  });
+});
+
+describe('red flags on the dashboard (STORY-004)', () => {
+  async function seedWithNotes(notes: string): Promise<number> {
+    const batch = await IngestionBatch.create({
+      fileHash: `hash-${Date.now()}-${Math.random()}`,
+      fileName: 'interactions.csv',
+      totalRows: 1,
+      validCount: 1,
+      errorCount: 0,
+    });
+    const record = await RecruiterInteractionRecord.create({
+      batchId: batch.id,
+      recruiterName: 'Sam Lee',
+      recruiterEmail: 'sam@acme.com',
+      recruiterCompany: 'Acme',
+      interactionDate: new Date('2026-08-01'),
+      interactionType: 'email',
+      channel: 'email',
+      notes,
+    });
+    return record.id;
+  }
+
+  const BADGE = '<span class="red-flag-badge">';
+
+  it('highlights ingested data with a red flag and logs the identification for audit', async () => {
+    const id = await seedWithNotes('They want an upfront fee before the interview.');
+
+    const list = await request(buildApp()).get('/dashboard');
+    const detail = await request(buildApp()).get(`/dashboard/interactions/${id}`);
+
+    expect(list.status).toBe(200);
+    expect(list.text).toContain(`${BADGE}&#9873; 1 red flag · for review</span>`);
+    expect(detail.text).toContain('Red flags — for your review');
+    // Two page loads, one identification: the audit log does not duplicate.
+    const logs = await RedFlagLog.findAll();
+    expect(logs.map((log) => [log.interactionId, log.ruleId, log.evidence])).toEqual([
+      [id, 'money_or_personal_data', '"upfront", "fee"'],
+    ]);
+  });
+
+  it('shows no highlights and logs nothing when there are no red flags', async () => {
+    await seedWithNotes('Thanks for the feedback on my resume.');
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('Sam Lee');
+    expect(response.text).not.toContain(BADGE);
+    expect(await RedFlagLog.count()).toBe(0);
+  });
+});
+
+describe('red flag check failure (STORY-004 "highlighting fails")', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('still loads the dashboard, says the check is unavailable, and logs the error', async () => {
+    const batch = await IngestionBatch.create({ fileHash: 'hash-unavailable', fileName: 'i.csv', totalRows: 1, validCount: 1, errorCount: 0 });
+    await RecruiterInteractionRecord.create({
+      batchId: batch.id,
+      recruiterName: 'Sam Lee',
+      recruiterEmail: 'sam@acme.com',
+      recruiterCompany: 'Acme',
+      interactionDate: new Date('2026-08-01'),
+      interactionType: 'email',
+      channel: 'email',
+      notes: 'They want an upfront fee.',
+    });
+    jest.spyOn(redFlagRules, 'detectRedFlags').mockImplementation(() => {
+      throw new Error('rule crashed');
+    });
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+    const response = await request(buildApp()).get('/dashboard');
+
+    expect(response.status).toBe(200);
+    expect(response.text).toContain('Sam Lee');
+    expect(response.text).toContain('<p class="check-unavailable">');
+    expect(response.text).not.toContain('<span class="red-flag-badge">');
+    expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Red flag check failed'), expect.any(Error));
   });
 });

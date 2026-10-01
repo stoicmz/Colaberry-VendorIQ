@@ -6,6 +6,8 @@ import {
   HistoryStatusInfo,
   HistoryStatusReason,
 } from '../historyStatus/historyStatusService';
+import { identifyRedFlags } from '../redFlags/redFlagService';
+import { RedFlag } from '../redFlags/redFlagRules';
 
 export interface InteractionSummary {
   id: number;
@@ -15,6 +17,8 @@ export interface InteractionSummary {
   interactionType: string;
   historyStatus: HistoryStatus;
   historyStatusReason: HistoryStatusReason;
+  // STORY-004: [] means checked with no red flags; null means the check was unavailable.
+  redFlags: RedFlag[] | null;
 }
 
 export interface InteractionDetail extends InteractionSummary {
@@ -30,7 +34,11 @@ export interface InteractionHistory {
   pendingReview: InteractionSummary[];
 }
 
-function toSummary(record: RecruiterInteractionRecord, status: HistoryStatusInfo): InteractionSummary {
+function toSummary(
+  record: RecruiterInteractionRecord,
+  status: HistoryStatusInfo,
+  redFlags: Map<number, RedFlag[]> | null
+): InteractionSummary {
   return {
     id: record.id,
     recruiterName: record.recruiterName,
@@ -39,6 +47,7 @@ function toSummary(record: RecruiterInteractionRecord, status: HistoryStatusInfo
     interactionType: record.interactionType,
     historyStatus: status.status,
     historyStatusReason: status.reason,
+    redFlags: redFlags === null ? null : redFlags.get(record.id) ?? [],
   };
 }
 
@@ -46,10 +55,12 @@ export async function listInteractions(): Promise<InteractionHistory> {
   await ensureModelsSynced();
   const records = await RecruiterInteractionRecord.findAll({ order: [['interactionDate', 'DESC']] });
   const statuses = await getHistoryStatuses(records.map((record) => record.id));
+  const visibleIds = records.filter((record) => statuses.get(record.id)!.status !== 'rejected').map((record) => record.id);
+  const redFlags = await identifyRedFlags(visibleIds);
 
   const history: InteractionHistory = { confirmed: [], pendingReview: [] };
   for (const record of records) {
-    const summary = toSummary(record, statuses.get(record.id)!);
+    const summary = toSummary(record, statuses.get(record.id)!, redFlags);
     if (summary.historyStatus === 'confirmed') {
       history.confirmed.push(summary);
     } else if (summary.historyStatus === 'pending_review') {
@@ -68,9 +79,10 @@ export async function getInteractionById(id: number): Promise<InteractionDetail 
 
   await InteractionViewLog.create({ interactionId: record.id });
   const status = (await getHistoryStatuses([record.id])).get(record.id)!;
+  const redFlags = await identifyRedFlags([record.id]);
 
   return {
-    ...toSummary(record, status),
+    ...toSummary(record, status, redFlags),
     recruiterEmail: record.recruiterEmail,
     channel: record.channel,
     notes: record.notes,

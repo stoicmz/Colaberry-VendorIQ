@@ -24,6 +24,7 @@ describe('date rendering', () => {
       notes: null,
       historyStatus: 'confirmed' as const,
       historyStatusReason: 'attested' as const,
+      redFlags: [],
     };
 
     expect(renderDashboardPage({ confirmed: [interaction], pendingReview: [] })).toContain('Aug 18, 2026');
@@ -43,6 +44,7 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     recruiterName: 'Confirmed Recruiter',
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
+    redFlags: [],
   };
   const disputed = {
     ...base,
@@ -50,6 +52,7 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     recruiterName: 'Disputed Recruiter',
     historyStatus: 'pending_review' as const,
     historyStatusReason: 'disputed' as const,
+    redFlags: [],
   };
 
   it('shows pending interactions only in the labelled review section, after the confirmed table', () => {
@@ -77,5 +80,79 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     const html = renderDetailPage({ ...disputed, recruiterEmail: null, channel: null, notes: null });
 
     expect(html).toContain('Waiting for review: disputed');
+  });
+});
+
+describe('red flag highlighting (STORY-004)', () => {
+  const feeFlag = {
+    ruleId: 'money_or_personal_data' as const,
+    description: 'Notes mention a payment or personal/financial details',
+    evidence: '"upfront", "fee"',
+  };
+  const gmailFlag = {
+    ruleId: 'personal_email_domain' as const,
+    description: 'Personal email domain used while representing a company',
+    evidence: 'gmail.com, representing Acme',
+  };
+  const summary = {
+    id: 7,
+    recruiterName: 'Flagged Recruiter',
+    recruiterCompany: 'Acme',
+    interactionDate: new Date('2026-08-18T00:00:00.000Z'),
+    interactionType: 'email',
+    historyStatus: 'confirmed' as const,
+    historyStatusReason: 'attested' as const,
+    redFlags: [feeFlag, gmailFlag],
+  };
+  const detail = { ...summary, recruiterEmail: 'jane@gmail.com', channel: null, notes: 'Asked for an upfront fee.' };
+
+  // The CSS in <head> names these classes on every page, so assert on the elements themselves.
+  const BADGE = '<span class="red-flag-badge">';
+  const PANEL = '<section class="red-flags">';
+  const UNAVAILABLE = '<p class="check-unavailable">';
+
+  it('highlights a flagged interaction on the list with a count, in both sections', () => {
+    const pending = { ...summary, id: 8, historyStatus: 'pending_review' as const, historyStatusReason: 'disputed' as const, redFlags: [feeFlag] };
+    const html = renderDashboardPage({ confirmed: [summary], pendingReview: [pending] });
+
+    expect(html).toContain(`${BADGE}&#9873; 2 red flags · for review</span>`);
+    expect(html).toContain(`${BADGE}&#9873; 1 red flag · for review</span>`);
+    expect(html).not.toContain(UNAVAILABLE);
+  });
+
+  it('shows no highlight at all when there are no red flags', () => {
+    const clean = { ...summary, redFlags: [] };
+
+    expect(renderDashboardPage({ confirmed: [clean], pendingReview: [] })).not.toContain(BADGE);
+    expect(renderDetailPage({ ...detail, redFlags: [] })).not.toContain(PANEL);
+  });
+
+  it('lists each red flag with its evidence on the detail page, framed as for review', () => {
+    const html = renderDetailPage(detail);
+
+    expect(html).toContain(PANEL);
+    expect(html).toContain('Red flags — for your review');
+    expect(html).toContain('not a judgment of the recruiter');
+    expect(html).toContain('<strong>Notes mention a payment or personal/financial details</strong> — &quot;upfront&quot;, &quot;fee&quot;');
+    expect(html).toContain('<strong>Personal email domain used while representing a company</strong> — gmail.com, representing Acme');
+  });
+
+  it('says the check is unavailable, instead of looking clean, when red flags are null', () => {
+    const unchecked = { ...summary, redFlags: null };
+
+    const list = renderDashboardPage({ confirmed: [unchecked], pendingReview: [] });
+    const page = renderDetailPage({ ...detail, redFlags: null });
+
+    expect(list).toContain(UNAVAILABLE);
+    expect(list).not.toContain(BADGE);
+    expect(page).toContain(UNAVAILABLE);
+    expect(page).not.toContain(PANEL);
+  });
+
+  it('escapes evidence, since it quotes user-entered notes', () => {
+    const html = renderDetailPage({ ...detail, redFlags: [{ ...feeFlag, evidence: '<script>alert(1)</script> fee' }] });
+
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; fee');
   });
 });
