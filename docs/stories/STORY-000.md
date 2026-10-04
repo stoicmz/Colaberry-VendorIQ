@@ -130,7 +130,7 @@ Source: `plan.releases[]` for the bars — each carries `starts_on`, `ends_on`, 
 A Gantt view of your releases, and under it every task with its due date. Tasks are clickable and open their own detail. Your releases:
 - **r0** Initial Data Ingestion and Display — 4 stories
 - **r1** Red Flag Highlighting and Manual Review — 4 stories
-- **r2** Enhanced Data Display and User Guidance — 4 stories
+- **r2** Enhanced Data Display and User Guidance — 5 stories
 - **r3** User Feedback and Trial Period — 2 stories
 - **r4** Audit and Reliability Assurance — 1 story
 
@@ -138,7 +138,7 @@ A Gantt view of your releases, and under it every task with its due date. Tasks 
 Source: `plan.agents[]` — one card each, with `name`, `purpose`, `trigger_type`, `trigger`, `inputs`, `outputs`, `autonomy_level`, `approval_gates`, `escalation_rules`, `skills` and `owns` (the story ids it owns, which you join back to the plan and the progress file). `plan.derived.counts.agents_by_autonomy` gives you the roster breakdown without counting them yourself.
 What is NOT there: whether any agent has ever run. There is no run history, no last-run time and no success rate in these files, because none of that exists until you build the agent and it starts running. Show the design, and show "no runs recorded" — never a zero success rate, which reads as an agent that ran and failed.
 Your plan does not carry a scoped agent roster yet, so build this tab from who owns each story:
-- **Development Team** — owns STORY-001, STORY-004, STORY-005, STORY-006, STORY-007, STORY-015
+- **Development Team** — owns STORY-001, STORY-004, STORY-005, STORY-006, STORY-007, STORY-015, STORY-016
 - **Frontend Developer** — owns STORY-002
 - **Data Reviewer** — owns STORY-003, STORY-011
 - **Product Management** — owns STORY-008, STORY-009
@@ -214,6 +214,7 @@ Your full set, so the Command Center can show all of it:
 - STORY-007 — Provide clear explanations of displayed data
 - STORY-012 — Display recruiter interaction reply status
 - STORY-013 — Show job seekers recruiter responsiveness and follow-up patterns
+- STORY-016 — Route attribution corrections through the job seeker
 **r3 · User Feedback and Trial Period**
 - STORY-008 — Collect user feedback during trial period
 - STORY-009 — Ensure positive user feedback confirms reliability

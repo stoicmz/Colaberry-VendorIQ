@@ -86,13 +86,13 @@ Context for the stories that use it — constraints do not get their own story.
 
 The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.
 
-Fulfilled by: STORY-003
+Fulfilled by: STORY-003, STORY-016
 
 ### REQ-007 — Safety · must
 
 The system must ensure data is correctly attributed to the right recruiter.
 
-Fulfilled by: STORY-003
+Fulfilled by: STORY-003, STORY-016
 
 ### REQ-010 — Safety · must
 

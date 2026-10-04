@@ -1,6 +1,6 @@
 # VendorIQ — Stories
 
-15 stories across 5 releases, walking-skeleton first:
+16 stories across 5 releases, walking-skeleton first:
 the earliest release proves the thinnest end-to-end path including the trust
 spine, and later releases stack features on top of something already working.
 
@@ -42,6 +42,7 @@ system rather than a part of it.
 - **[STORY-007](stories/STORY-007.md)** — Provide clear explanations of displayed data _(waits on STORY-005)_
 - **[STORY-012](stories/STORY-012.md)** — Display recruiter interaction reply status _(waits on STORY-006)_
 - **[STORY-013](stories/STORY-013.md)** — Show job seekers recruiter responsiveness and follow-up patterns _(waits on STORY-012)_
+- **[STORY-016](stories/STORY-016.md)** — Route attribution corrections through the job seeker _(waits on STORY-011)_
 
 ## r3 · User Feedback and Trial Period — weeks 3–4
 

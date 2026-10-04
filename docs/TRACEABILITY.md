@@ -9,10 +9,10 @@ none, because it is context rather than work.
 | REQ-001 | Functional | must | STORY-001 |
 | REQ-002 | Functional | must | STORY-002 |
 | REQ-003 | Functional | must | STORY-004 |
-| REQ-004 | Functional | must | STORY-003 |
+| REQ-004 | Functional | must | STORY-003, STORY-016 |
 | REQ-005 | Functional | must | STORY-005 |
 | REQ-006 | Functional | must | STORY-007 |
-| REQ-007 | Safety | must | STORY-003 |
+| REQ-007 | Safety | must | STORY-003, STORY-016 |
 | REQ-008 | Non-functional | must | STORY-002 |
 | REQ-009 | Constraint | must | _(constraint — no story)_ |
 | REQ-010 | Safety | must | STORY-011 |

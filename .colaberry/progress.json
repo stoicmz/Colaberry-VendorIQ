@@ -2,12 +2,12 @@
   "schema_version": 2,
   "project": "VendorIQ",
   "totals": {
-    "stories_total": 16,
+    "stories_total": 17,
     "stories_verified": 8,
     "stories_submitted": 0,
     "stories_in_progress": 8,
-    "stories_not_started": 0,
-    "criteria_total": 50,
+    "stories_not_started": 1,
+    "criteria_total": 53,
     "criteria_passed": 26,
     "points_awarded": 415
   },
@@ -714,6 +714,30 @@
         "points_awarded": 50,
         "outstanding": []
       }
+    },
+    {
+      "id": "STORY-016",
+      "release": "r2",
+      "acceptance_total": 3,
+      "criteria": [
+        {
+          "text": "Given an interaction with incorrect attribution, when I identify it during review, then I can request a correction from the job seeker with a reason, and I cannot change the attribution myself.",
+          "passed": false
+        },
+        {
+          "text": "Given an attribution correction request, when the job seeker responds, by correcting the recruiter name or company, confirming the original is correct, or stating the information is unavailable, with a reason in each case, then the system records the response (any correction as a new attested version, with the original kept) and returns the interaction for review.",
+          "passed": false
+        },
+        {
+          "text": "Trust: Every request, response and review decision is logged with the actor's ID and timestamp.",
+          "passed": false
+        }
+      ],
+      "files_touched": [],
+      "tests_added": [],
+      "notes": null,
+      "updated_at": null,
+      "verification": null
     }
   ]
 }

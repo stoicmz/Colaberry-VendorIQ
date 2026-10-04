@@ -40,7 +40,8 @@
       "priority": "must",
       "statement": "The system must allow data reviewers to manually verify data accuracy before it is displayed to job seekers.",
       "fulfilled_by": [
-        "STORY-003"
+        "STORY-003",
+        "STORY-016"
       ]
     },
     {
@@ -70,7 +71,8 @@
       "priority": "must",
       "statement": "The system must ensure data is correctly attributed to the right recruiter.",
       "fulfilled_by": [
-        "STORY-003"
+        "STORY-003",
+        "STORY-016"
       ]
     },
     {
@@ -236,9 +238,10 @@
         "STORY-006",
         "STORY-007",
         "STORY-012",
-        "STORY-013"
+        "STORY-013",
+        "STORY-016"
       ],
-      "starts_on": "2026-09-02",
+      "starts_on": "2026-09-01",
       "ends_on": "2026-09-14",
       "is_demo_target": false
     },
@@ -422,7 +425,7 @@
         "Display fails"
       ],
       "task_guidance": "Enhance the dashboard to display message frequency and timestamps.",
-      "due_on": "2026-09-02",
+      "due_on": "2026-09-01",
       "due_baseline_on": "2026-09-02"
     },
     {
@@ -448,7 +451,7 @@
         "Tooltip fails to load"
       ],
       "task_guidance": "Implement explanatory tooltips or sections on the dashboard.",
-      "due_on": "2026-09-06",
+      "due_on": "2026-09-04",
       "due_baseline_on": "2026-09-06"
     },
     {
@@ -578,7 +581,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Enhance the interaction display to show reply status for each recruiter interaction. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-09-10",
+      "due_on": "2026-09-07",
       "due_baseline_on": "2026-09-10"
     },
     {
@@ -604,7 +607,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Implement a display feature that shows responsiveness and follow-up patterns for recruiters. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-09-14",
+      "due_on": "2026-09-11",
       "due_baseline_on": "2026-09-14"
     },
     {
@@ -649,6 +652,29 @@
       "task_guidance": "Author: the student (REQ-019, safety/guardrails). Attestation is captured at submission time and stored with the submission; disputed or unattested rows must never reach the confirmed-history view without manual review.",
       "due_on": "2026-09-06",
       "due_baseline_on": "2026-10-01"
+    },
+    {
+      "id": "STORY-016",
+      "title": "Route attribution corrections through the job seeker",
+      "release": "r2",
+      "fulfills": [
+        "REQ-004",
+        "REQ-007"
+      ],
+      "narrative": "As a data reviewer, I want attribution errors I find to go back to the job seeker for correction, so that the person who verifies the data is never the person who changes it.",
+      "acceptance": [
+        "Given an interaction with incorrect attribution, when I identify it during review, then I can request a correction from the job seeker with a reason, and I cannot change the attribution myself.",
+        "Given an attribution correction request, when the job seeker responds, by correcting the recruiter name or company, confirming the original is correct, or stating the information is unavailable, with a reason in each case, then the system records the response (any correction as a new attested version, with the original kept) and returns the interaction for review.",
+        "Trust: Every request, response and review decision is logged with the actor's ID and timestamp."
+      ],
+      "blocked_by": [
+        "STORY-011"
+      ],
+      "owner_agent": "Development Team",
+      "failure_paths": [],
+      "task_guidance": "Build the request-and-response workflow on top of the correction workflow from STORY-011. The reviewer raises a request with a reason and has no path to edit the attribution directly. The job seeker answers with a correction, a confirmation, or an unavailable, each carrying a reason. A correction is stored as a new attested version with the original kept, never as an overwrite.",
+      "due_on": "2026-09-14",
+      "due_baseline_on": "2026-09-14"
     }
   ],
   "agents": [],
@@ -656,8 +682,8 @@
     "name": "VendorIQ",
     "descriptor": "An AI-driven job-seeker protection platform that tracks recruiter and vendor behavior patterns over time.",
     "repo_url": "https://github.com/stoicmz/Colaberry-VendorIQ",
-    "plan_version": 6,
-    "plan_sha256": "f4f03fdc72c7b9f24d03cf1b01573f0176bece1cf2c508d7f908807de767ff65"
+    "plan_version": 7,
+    "plan_sha256": "fc44fc203bac3ec3f5d6151300c577228b533c1a7ab8fb6abd1dfcffc7105d3a"
   },
   "schedule": {
     "build_start": "2026-08-20",
@@ -749,7 +775,7 @@
         "REL": 2,
         "SAFE": 4
       },
-      "stories_total": 15,
+      "stories_total": 16,
       "releases_total": 5,
       "agents_total": 0,
       "failure_paths_total": 41,
