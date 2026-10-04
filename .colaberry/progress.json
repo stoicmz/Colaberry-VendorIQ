@@ -257,21 +257,43 @@
       "criteria": [
         {
           "text": "Given uncertain data, when it is flagged, then a data reviewer is notified for manual review.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given certain data, when I view it, then no flag is shown.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: Flagging actions are logged for audit purposes.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/src/services/uncertainData/uncertainDataRules.ts",
+        "backend/src/services/uncertainData/uncertainDataService.ts",
+        "backend/src/services/uncertainData/uncertainDataFlagService.ts",
+        "backend/src/models/UncertainDataFlag.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/services/historyStatus/historyStatusService.ts",
+        "backend/src/services/historyReview/historyReviewService.ts",
+        "backend/src/services/recruiterInteractions/recruiterInteractionsService.ts",
+        "backend/src/routes/historyReviewRoutes.ts",
+        "backend/src/routes/vendorIngestionRoutes.ts",
+        "backend/src/views/dashboardTemplates.ts"
+      ],
+      "tests_added": [
+        "backend/src/services/uncertainData/uncertainDataRules.test.ts",
+        "backend/src/services/uncertainData/uncertainDataService.test.ts",
+        "backend/src/services/uncertainData/uncertainDataFlagService.test.ts",
+        "backend/src/routes/uncertainDataNotifications.test.ts",
+        "backend/src/services/historyStatus/historyStatusService.test.ts",
+        "backend/src/services/historyReview/historyReviewService.test.ts",
+        "backend/src/views/dashboardTemplates.test.ts",
+        "backend/src/routes/historyReviewRoutes.test.ts",
+        "backend/src/routes/recruiterInteractionRoutes.test.ts"
+      ],
+      "notes": "Four fixed, factual, versioned rules flag uncertain data (recruiter can't be identified, dated after submission, possible duplicate across uploads, one email under different names); flagged data is held in 'Waiting for review' with its evidence, never judged or rejected (REQ-005), and a data reviewer is notified via GET /api/history-review/notifications and the review queue. Each flag is recorded once in uncertain_data_flags (the notification and the audit entry). Fail-safe: if the check cannot run, attested data with no ruling is held rather than confirmed, rulings pause (503), recorded notifications keep showing, and the dashboard shows a notice. Known limits: checks rescan the whole table on each read; name-spelling variants under one email are flagged for a reviewer to decide.",
+      "updated_at": "2026-10-04T02:12:23.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,

@@ -16,6 +16,7 @@ import './SubmissionAttestation';
 import './InteractionDispute';
 import './HistoryReviewDecision';
 import './RedFlagLog';
+import './UncertainDataFlag';
 
 export class IngestionBatch extends Model<InferAttributes<IngestionBatch>, InferCreationAttributes<IngestionBatch>> {
   declare id: CreationOptional<number>;

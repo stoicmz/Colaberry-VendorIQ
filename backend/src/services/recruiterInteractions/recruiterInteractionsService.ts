@@ -8,6 +8,7 @@ import {
 } from '../historyStatus/historyStatusService';
 import { identifyRedFlags } from '../redFlags/redFlagService';
 import { RedFlag } from '../redFlags/redFlagRules';
+import { UncertainDataFlag } from '../uncertainData/uncertainDataRules';
 
 export interface InteractionSummary {
   id: number;
@@ -19,6 +20,9 @@ export interface InteractionSummary {
   historyStatusReason: HistoryStatusReason;
   // STORY-004: [] means checked with no red flags; null means the check was unavailable.
   redFlags: RedFlag[] | null;
+  // STORY-005: what is uncertain while it waits for a data reviewer; [] when there is nothing
+  // to show (certain, or already ruled on); null means the check was unavailable.
+  uncertainFlags: UncertainDataFlag[] | null;
 }
 
 export interface InteractionDetail extends InteractionSummary {
@@ -48,6 +52,7 @@ function toSummary(
     historyStatus: status.status,
     historyStatusReason: status.reason,
     redFlags: redFlags === null ? null : redFlags.get(record.id) ?? [],
+    uncertainFlags: status.uncertainFlags === undefined ? [] : status.uncertainFlags,
   };
 }
 

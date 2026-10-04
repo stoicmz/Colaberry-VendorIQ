@@ -10,11 +10,23 @@ import {
   InvalidHistoryReviewInputError,
   listPendingReview,
   NotPendingReviewError,
+  UncertaintyCheckUnavailableError,
 } from './historyReviewService';
+import * as uncertainDataService from '../uncertainData/uncertainDataService';
 
 beforeEach(async () => {
   await sequelize.sync({ force: true });
 });
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+// STORY-005: simulate the uncertain-data check being unavailable for every call in a test.
+function breakUncertaintyCheck(): void {
+  jest.spyOn(uncertainDataService, 'detectStoredUncertainData').mockRejectedValue(new Error('rules crashed'));
+  jest.spyOn(console, 'error').mockImplementation(() => undefined);
+}
 
 afterAll(async () => {
   await sequelize.close();
@@ -22,7 +34,8 @@ afterAll(async () => {
 
 let hashCounter = 0;
 async function seedInteraction(attested: boolean): Promise<number> {
-  const fileHash = String(hashCounter++).padStart(64, '0');
+  const seedNumber = hashCounter++;
+  const fileHash = String(seedNumber).padStart(64, '0');
   const batch = await IngestionBatch.create({ fileHash, fileName: 'i.csv', totalRows: 1, validCount: 1, errorCount: 0 });
   if (attested) {
     await SubmissionAttestation.create({
@@ -39,7 +52,8 @@ async function seedInteraction(attested: boolean): Promise<number> {
     recruiterName: 'Jane Doe',
     recruiterEmail: null,
     recruiterCompany: 'Acme',
-    interactionDate: new Date('2026-08-01'),
+    // A different day per seed, so separate uploads are not STORY-005 possible duplicates.
+    interactionDate: new Date(Date.UTC(2026, 7, 1 + seedNumber)),
     interactionType: 'email',
     channel: null,
     notes: null,
@@ -156,6 +170,16 @@ describe('decideHistoryReview', () => {
       await decideHistoryReview({ interactionId: 9999, reviewerId: 'rev-1', decision: 'confirmed', note: null })
     ).toBeNull();
   });
+
+  it('pauses rulings while the uncertain-data check is unavailable, and writes nothing', async () => {
+    const id = await seedInteraction(false);
+    breakUncertaintyCheck();
+
+    await expect(
+      decideHistoryReview({ interactionId: id, reviewerId: 'rev-1', decision: 'confirmed', note: null })
+    ).rejects.toThrow(UncertaintyCheckUnavailableError);
+    expect(await HistoryReviewDecision.count()).toBe(0);
+  });
 });
 
 describe('listPendingReview', () => {
@@ -180,5 +204,17 @@ describe('listPendingReview', () => {
     await decideHistoryReview({ interactionId: id, reviewerId: 'rev-1', decision: 'confirmed', note: null });
 
     expect(await listPendingReview()).toEqual([]);
+  });
+
+  it('leaves out data held only because the uncertain-data check is unavailable', async () => {
+    const held = await seedInteraction(true);
+    const unattested = await seedInteraction(false);
+    breakUncertaintyCheck();
+
+    const queue = await listPendingReview();
+
+    expect(queue.map((item) => item.interactionId)).toEqual([unattested]);
+    expect(queue.map((item) => item.interactionId)).not.toContain(held);
+    expect(queue[0].uncertainFlags).toBeNull();
   });
 });

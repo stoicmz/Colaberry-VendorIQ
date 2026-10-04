@@ -4,7 +4,9 @@ import {
   disputeInteraction,
   InvalidHistoryReviewInputError,
   listPendingReview,
+  listUncertainDataNotifications,
   NotPendingReviewError,
+  UncertaintyCheckUnavailableError,
 } from '../services/historyReview/historyReviewService';
 
 // REQ-019 manual review of recruiter history: raising disputes, the review queue, and a
@@ -63,6 +65,18 @@ historyReviewRouter.get('/queue', async (_req: Request, res: Response) => {
   }
 });
 
+// STORY-005: a data reviewer's open uncertain-data notifications.
+historyReviewRouter.get('/notifications', async (_req: Request, res: Response) => {
+  try {
+    const result = await listUncertainDataNotifications();
+    res.status(200).json(result);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to load uncertain-data notifications', err);
+    res.status(500).json({ error: 'Failed to load notifications.' });
+  }
+});
+
 historyReviewRouter.post('/interactions/:id/decision', async (req: Request, res: Response) => {
   const id = parseInteractionId(req.params.id);
   if (id === null) {
@@ -90,6 +104,10 @@ historyReviewRouter.post('/interactions/:id/decision', async (req: Request, res:
     }
     if (err instanceof NotPendingReviewError) {
       res.status(409).json({ error: err.message, currentStatus: err.currentStatus });
+      return;
+    }
+    if (err instanceof UncertaintyCheckUnavailableError) {
+      res.status(503).json({ error: err.message });
       return;
     }
     // eslint-disable-next-line no-console

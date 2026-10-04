@@ -43,7 +43,8 @@ async function seedInteraction(
   return RecruiterInteractionRecord.create({
     batchId: batch.id,
     recruiterName: overrides.recruiterName ?? 'Jane Doe',
-    recruiterEmail: 'jane@example.com',
+    // One email per recruiter: a shared email under different names is STORY-005 uncertain data.
+    recruiterEmail: `${(overrides.recruiterName ?? 'Jane Doe').toLowerCase().replace(/\s+/g, '.')}@example.com`,
     recruiterCompany: 'Acme Corp',
     interactionDate: overrides.interactionDate ?? new Date('2026-08-01'),
     interactionType: 'email',

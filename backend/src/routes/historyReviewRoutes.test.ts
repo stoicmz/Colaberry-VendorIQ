@@ -20,7 +20,8 @@ afterAll(async () => {
 
 let hashCounter = 0;
 async function seedInteraction(attested: boolean): Promise<number> {
-  const fileHash = String(hashCounter++).padStart(64, '0');
+  const seedNumber = hashCounter++;
+  const fileHash = String(seedNumber).padStart(64, '0');
   const batch = await IngestionBatch.create({ fileHash, fileName: 'i.csv', totalRows: 1, validCount: 1, errorCount: 0 });
   if (attested) {
     await SubmissionAttestation.create({
@@ -37,7 +38,8 @@ async function seedInteraction(attested: boolean): Promise<number> {
     recruiterName: 'Jane Doe',
     recruiterEmail: null,
     recruiterCompany: 'Acme',
-    interactionDate: new Date('2026-08-01'),
+    // A different day per seed, so separate uploads are not STORY-005 possible duplicates.
+    interactionDate: new Date(Date.UTC(2026, 7, 1 + seedNumber)),
     interactionType: 'email',
     channel: null,
     notes: null,

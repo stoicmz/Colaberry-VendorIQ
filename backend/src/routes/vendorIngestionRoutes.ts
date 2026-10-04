@@ -10,6 +10,7 @@ import {
 } from '../services/vendorIngestion/vendorIngestionService';
 import { RawRow } from '../services/vendorIngestion/vendorIngestionRowValidator';
 import { cleanRows, logCleaningActions } from '../services/dataCleaning/dataCleaningService';
+import { flagUncertainData } from '../services/uncertainData/uncertainDataService';
 import { ensureModelsSynced } from '../models/VendorIngestionRecord';
 import { IngestionAuditLog } from '../models/IngestionAuditLog';
 
@@ -117,6 +118,19 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         attestedBy,
       });
 
+      // STORY-005: flag uncertain data, which notifies data reviewers. The rows are already
+      // saved, so a failure here must not fail the upload: the data still waits for review
+      // (status is worked out from the rules on every read) and the next call to
+      // GET /api/history-review/notifications records the missed flag.
+      let uncertainDataCheck: 'completed' | 'failed' = 'completed';
+      try {
+        await flagUncertainData();
+      } catch (flagErr) {
+        // eslint-disable-next-line no-console
+        console.error('Uncertain-data flagging failed after upload; it will be retried on the next notifications check', flagErr);
+        uncertainDataCheck = 'failed';
+      }
+
       res.status(200).json({
         correlationId,
         batchId: result.batchId,
@@ -127,6 +141,7 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         valid: result.valid,
         errors: result.errors,
         attestation: result.attestation,
+        uncertainDataCheck,
       });
     } catch (err) {
       if (

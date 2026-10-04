@@ -25,6 +25,7 @@ describe('date rendering', () => {
       historyStatus: 'confirmed' as const,
       historyStatusReason: 'attested' as const,
       redFlags: [],
+      uncertainFlags: [],
     };
 
     expect(renderDashboardPage({ confirmed: [interaction], pendingReview: [] })).toContain('Aug 18, 2026');
@@ -45,6 +46,7 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
     redFlags: [],
+    uncertainFlags: [],
   };
   const disputed = {
     ...base,
@@ -53,6 +55,7 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     historyStatus: 'pending_review' as const,
     historyStatusReason: 'disputed' as const,
     redFlags: [],
+    uncertainFlags: [],
   };
 
   it('shows pending interactions only in the labelled review section, after the confirmed table', () => {
@@ -103,6 +106,7 @@ describe('red flag highlighting (STORY-004)', () => {
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
     redFlags: [feeFlag, gmailFlag],
+    uncertainFlags: [],
   };
   const detail = { ...summary, recruiterEmail: 'jane@gmail.com', channel: null, notes: 'Asked for an upfront fee.' };
 
@@ -154,5 +158,85 @@ describe('red flag highlighting (STORY-004)', () => {
 
     expect(html).not.toContain('<script>alert(1)</script>');
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; fee');
+  });
+});
+
+describe('uncertain data (STORY-005)', () => {
+  const unidentifiedFlag = {
+    ruleId: 'unidentified_recruiter' as const,
+    description: 'Recruiter cannot be identified: no email or company recorded',
+    evidence: 'Only a name is recorded: Jane Doe',
+  };
+  const uncertain = {
+    id: 9,
+    recruiterName: 'Jane Doe',
+    recruiterCompany: null,
+    interactionDate: new Date('2026-08-18T00:00:00.000Z'),
+    interactionType: 'email',
+    historyStatus: 'pending_review' as const,
+    historyStatusReason: 'uncertain' as const,
+    redFlags: [],
+    uncertainFlags: [unidentifiedFlag],
+  };
+  const certain = {
+    ...uncertain,
+    id: 10,
+    recruiterName: 'John Smith',
+    recruiterCompany: 'Acme',
+    historyStatus: 'confirmed' as const,
+    historyStatusReason: 'attested' as const,
+    uncertainFlags: [],
+  };
+  const detailOf = <T extends object>(summary: T) => ({ ...summary, recruiterEmail: null, channel: null, notes: null });
+
+  const PANEL = '<section class="uncertain-data">';
+  const UNAVAILABLE_TEXT = 'Uncertain-data check is unavailable right now';
+
+  it('lists what is uncertain, with its evidence, on the detail page -- framed as facts for a reviewer', () => {
+    const html = renderDetailPage(detailOf(uncertain));
+
+    expect(html).toContain(PANEL);
+    expect(html).toContain('Uncertain data — waiting for a data reviewer');
+    expect(html).toContain('not a judgment');
+    expect(html).toContain(
+      '<strong>Recruiter cannot be identified: no email or company recorded</strong> — Only a name is recorded: Jane Doe'
+    );
+    expect(html).toContain('Waiting for review: uncertain data');
+  });
+
+  it('says why it is waiting in the review section of the dashboard', () => {
+    const html = renderDashboardPage({ confirmed: [], pendingReview: [uncertain] });
+
+    expect(html).toContain('<td>Uncertain data</td>');
+    expect(html).toContain('or were flagged as uncertain data');
+  });
+
+  it('shows no flag at all for certain data', () => {
+    expect(renderDetailPage(detailOf(certain))).not.toContain(PANEL);
+    const list = renderDashboardPage({ confirmed: [certain], pendingReview: [] });
+    expect(list).not.toContain('Uncertain data');
+    expect(list).not.toContain(UNAVAILABLE_TEXT);
+  });
+
+  it('says the check is unavailable, and that unchecked data is held, when uncertain flags are null', () => {
+    const held = { ...certain, historyStatus: 'pending_review' as const, historyStatusReason: 'uncertainty_unchecked' as const, uncertainFlags: null };
+
+    const list = renderDashboardPage({ confirmed: [], pendingReview: [held] });
+    const page = renderDetailPage(detailOf(held));
+
+    expect(list).toContain(UNAVAILABLE_TEXT);
+    expect(list).toContain('held for review, not shown as confirmed');
+    expect(list).toContain('<td>Not yet checked</td>');
+    expect(page).toContain(UNAVAILABLE_TEXT);
+    expect(page).not.toContain(PANEL);
+  });
+
+  it('escapes evidence, since it quotes uploaded names', () => {
+    const html = renderDetailPage(
+      detailOf({ ...uncertain, uncertainFlags: [{ ...unidentifiedFlag, evidence: 'Only a name is recorded: <b>x</b>' }] })
+    );
+
+    expect(html).not.toContain('<b>x</b>');
+    expect(html).toContain('Only a name is recorded: &lt;b&gt;x&lt;/b&gt;');
   });
 });

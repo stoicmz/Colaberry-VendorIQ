@@ -4,6 +4,7 @@ import { SubmissionAttestation } from '../../models/SubmissionAttestation';
 import { InteractionDispute } from '../../models/InteractionDispute';
 import { HistoryReviewDecision } from '../../models/HistoryReviewDecision';
 import { deriveHistoryStatus, getHistoryStatuses } from './historyStatusService';
+import * as uncertainDataService from '../uncertainData/uncertainDataService';
 
 beforeEach(async () => {
   await sequelize.sync({ force: true });
@@ -15,23 +16,39 @@ afterAll(async () => {
 
 describe('deriveHistoryStatus', () => {
   it.each([
-    // attested, openDispute, latestDecision -> status, reason
-    [true, false, null, 'confirmed', 'attested'],
-    [false, false, null, 'pending_review', 'unattested'],
-    [true, true, null, 'pending_review', 'disputed'],
-    [true, true, 'confirmed', 'pending_review', 'disputed'],
-    [false, false, 'confirmed', 'confirmed', 'reviewer_confirmed'],
-    [true, false, 'rejected', 'rejected', 'reviewer_rejected'],
+    // attested, uncertain, openDispute, latestDecision -> status, reason
+    [true, false, false, null, 'confirmed', 'attested'],
+    [false, false, false, null, 'pending_review', 'unattested'],
+    [true, false, true, null, 'pending_review', 'disputed'],
+    [true, false, true, 'confirmed', 'pending_review', 'disputed'],
+    [false, false, false, 'confirmed', 'confirmed', 'reviewer_confirmed'],
+    [true, false, false, 'rejected', 'rejected', 'reviewer_rejected'],
+    // STORY-005: uncertain data waits for review even when attested; a reviewer ruling clears it.
+    [true, true, false, null, 'pending_review', 'uncertain'],
+    [false, true, false, null, 'pending_review', 'uncertain'],
+    [true, true, true, null, 'pending_review', 'disputed'],
+    [true, true, false, 'confirmed', 'confirmed', 'reviewer_confirmed'],
+    [true, true, false, 'rejected', 'rejected', 'reviewer_rejected'],
+    // Check unavailable (null): an attestation alone never confirms unchecked data.
+    [true, null, false, null, 'pending_review', 'uncertainty_unchecked'],
+    [false, null, false, null, 'pending_review', 'unattested'],
+    [true, null, true, null, 'pending_review', 'disputed'],
+    [true, null, false, 'confirmed', 'confirmed', 'reviewer_confirmed'],
   ] as const)(
-    'attested=%s, openDispute=%s, latestDecision=%s -> %s (%s)',
-    (attested, hasOpenDispute, latestDecision, status, reason) => {
-      expect(deriveHistoryStatus({ attested, hasOpenDispute, latestDecision })).toEqual({ status, reason });
+    'attested=%s, uncertain=%s, openDispute=%s, latestDecision=%s -> %s (%s)',
+    (attested, uncertain, hasOpenDispute, latestDecision, status, reason) => {
+      expect(deriveHistoryStatus({ attested, uncertain, hasOpenDispute, latestDecision })).toEqual({ status, reason });
     }
   );
 });
 
 describe('getHistoryStatuses', () => {
-  async function seedInteraction(options: { attested: boolean; fileHash: string }): Promise<number> {
+  async function seedInteraction(options: {
+    attested: boolean;
+    fileHash: string;
+    interactionDate?: Date;
+    identifiable?: boolean;
+  }): Promise<number> {
     const batch = await IngestionBatch.create({
       fileHash: options.fileHash,
       fileName: 'i.csv',
@@ -52,9 +69,10 @@ describe('getHistoryStatuses', () => {
     const record = await RecruiterInteractionRecord.create({
       batchId: batch.id,
       recruiterName: 'Jane Doe',
-      recruiterEmail: null,
-      recruiterCompany: null,
-      interactionDate: new Date('2026-08-01'),
+      // An identifiable recruiter, so the STORY-005 uncertain-data rules stay out of these tests.
+      recruiterEmail: options.identifiable === false ? null : 'jane@acme.com',
+      recruiterCompany: options.identifiable === false ? null : 'Acme',
+      interactionDate: options.interactionDate ?? new Date('2026-08-01'),
       interactionType: 'email',
       channel: null,
       notes: null,
@@ -106,7 +124,12 @@ describe('getHistoryStatuses', () => {
 
   it('works out each interaction separately in one call, and skips unknown ids', async () => {
     const attested = await seedInteraction({ attested: true, fileHash: 'f'.repeat(64) });
-    const unattested = await seedInteraction({ attested: false, fileHash: '0'.repeat(64) });
+    // A different day, so the two are not a STORY-005 possible duplicate of each other.
+    const unattested = await seedInteraction({
+      attested: false,
+      fileHash: '0'.repeat(64),
+      interactionDate: new Date('2026-08-02'),
+    });
 
     const statuses = await getHistoryStatuses([attested, unattested, 9999]);
 
@@ -117,5 +140,63 @@ describe('getHistoryStatuses', () => {
 
   it('returns an empty result for no ids without querying', async () => {
     expect((await getHistoryStatuses([])).size).toBe(0);
+  });
+
+  describe('uncertain data (STORY-005)', () => {
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    it('routes attested but uncertain data to manual review, with the flags that explain why', async () => {
+      const id = await seedInteraction({ attested: true, fileHash: '1'.repeat(64), identifiable: false });
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({
+        status: 'pending_review',
+        reason: 'uncertain',
+        uncertainFlags: [expect.objectContaining({ ruleId: 'unidentified_recruiter' })],
+      });
+    });
+
+    it('treats it as confirmed once a data reviewer confirms it', async () => {
+      const id = await seedInteraction({ attested: true, fileHash: '2'.repeat(64), identifiable: false });
+      await HistoryReviewDecision.create({ interactionId: id, reviewerId: 'rev-1', decision: 'confirmed', note: null });
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'confirmed', reason: 'reviewer_confirmed' });
+    });
+
+    it('when the check fails: holds attested data for review instead of confirming it, and logs the failure', async () => {
+      const id = await seedInteraction({ attested: true, fileHash: '3'.repeat(64) });
+      jest.spyOn(uncertainDataService, 'detectStoredUncertainData').mockRejectedValueOnce(new Error('rules crashed'));
+      const consoleError = jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({
+        status: 'pending_review',
+        reason: 'uncertainty_unchecked',
+        uncertainFlags: null,
+      });
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Uncertain-data check failed'), expect.any(Error));
+    });
+
+    it('when the check fails: keeps a reviewer ruling as it was, marking the check unavailable', async () => {
+      const id = await seedInteraction({ attested: true, fileHash: '4'.repeat(64) });
+      await HistoryReviewDecision.create({ interactionId: id, reviewerId: 'rev-1', decision: 'confirmed', note: null });
+      jest.spyOn(uncertainDataService, 'detectStoredUncertainData').mockRejectedValueOnce(new Error('rules crashed'));
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({
+        status: 'confirmed',
+        reason: 'reviewer_confirmed',
+        uncertainFlags: null,
+      });
+    });
+
+    it('recovers by itself: once the check runs again, held data is confirmed with nothing to clean up', async () => {
+      const id = await seedInteraction({ attested: true, fileHash: '5'.repeat(64) });
+      jest.spyOn(uncertainDataService, 'detectStoredUncertainData').mockRejectedValueOnce(new Error('rules crashed'));
+      jest.spyOn(console, 'error').mockImplementation(() => undefined);
+      expect((await getHistoryStatuses([id])).get(id)?.reason).toBe('uncertainty_unchecked');
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'confirmed', reason: 'attested' });
+    });
   });
 });

@@ -53,6 +53,9 @@ function layout(title: string, body: string): string {
   .red-flags { background: #fdeaea; border: 1px solid #e0a0a0; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
   .red-flags h2 { margin-top: 0; }
   .red-flags-note { color: #6b1a1a; margin: 0.25rem 0 0.5rem; }
+  .uncertain-data { background: #fff8e6; border: 1px solid #e8cf8a; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
+  .uncertain-data h2 { margin-top: 0; }
+  .uncertain-data-note { color: #6b5200; margin: 0.25rem 0 0.5rem; }
   .check-unavailable { background: #fff8e6; border: 1px solid #e8cf8a; color: #6b5200; padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0; }
 </style>
 </head>
@@ -68,12 +71,16 @@ const STATUS_LABELS: Record<InteractionSummary['historyStatusReason'], string> =
   reviewer_confirmed: 'Confirmed by a reviewer',
   disputed: 'Waiting for review: disputed',
   unattested: 'Waiting for review: not attested as factual',
+  uncertain: 'Waiting for review: uncertain data',
+  uncertainty_unchecked: 'Waiting: not yet checked for uncertain data',
   reviewer_rejected: 'Rejected by a reviewer',
 };
 
 const PENDING_REASON_LABELS: Partial<Record<InteractionSummary['historyStatusReason'], string>> = {
   disputed: 'Disputed',
   unattested: 'Not attested',
+  uncertain: 'Uncertain data',
+  uncertainty_unchecked: 'Not yet checked',
 };
 
 // STORY-004: red flags are observations for a person to check, never a verdict (REQ-015).
@@ -106,11 +113,34 @@ function redFlagPanel(interaction: InteractionDetail): string {
     </section>`;
 }
 
+// STORY-005: uncertain data is a fact about the data, not a judgment (REQ-005). If the check
+// could not run, say so -- and that unchecked data is held, not shown as confirmed.
+const UNCERTAINTY_CHECK_UNAVAILABLE =
+  '<p class="check-unavailable">Uncertain-data check is unavailable right now. Interactions that have not been checked are held for review, not shown as confirmed. Try again shortly.</p>';
+
+function uncertainDataPanel(interaction: InteractionDetail): string {
+  if (interaction.uncertainFlags === null) {
+    return UNCERTAINTY_CHECK_UNAVAILABLE;
+  }
+  if (interaction.uncertainFlags.length === 0) {
+    return '';
+  }
+  const items = interaction.uncertainFlags
+    .map((flag) => `<li><strong>${escapeHtml(flag.description)}</strong> — ${escapeHtml(flag.evidence)}</li>`)
+    .join('\n');
+  return `<section class="uncertain-data">
+      <h2>Uncertain data — waiting for a data reviewer</h2>
+      <p class="uncertain-data-note">These are facts about the data, not a judgment. A data reviewer will check them before this counts as confirmed history.</p>
+      <ul>${items}</ul>
+    </section>`;
+}
+
 export function renderDashboardPage(history: InteractionHistory): string {
   const { confirmed, pendingReview } = history;
-  const checkUnavailable = [...confirmed, ...pendingReview].some((i) => i.redFlags === null)
-    ? RED_FLAG_CHECK_UNAVAILABLE
-    : '';
+  const all = [...confirmed, ...pendingReview];
+  const checkUnavailable =
+    (all.some((i) => i.redFlags === null) ? RED_FLAG_CHECK_UNAVAILABLE : '') +
+    (all.some((i) => i.uncertainFlags === null) ? UNCERTAINTY_CHECK_UNAVAILABLE : '');
 
   const confirmedRows = confirmed
     .map(
@@ -152,7 +182,7 @@ export function renderDashboardPage(history: InteractionHistory): string {
       ? ''
       : `<section class="pending">
         <h2>Waiting for review — not confirmed recruiter history</h2>
-        <p class="pending-note">These interactions were not attested as factual, or have been disputed. A data reviewer must check them before they count as confirmed.</p>
+        <p class="pending-note">These interactions were not attested as factual, have been disputed, or were flagged as uncertain data. A data reviewer must check them before they count as confirmed.</p>
         <table>
           <thead><tr><th>Recruiter</th><th>Company</th><th>Date</th><th>Why</th></tr></thead>
           <tbody>${pendingRows}</tbody>
@@ -179,6 +209,7 @@ export function renderDetailPage(interaction: InteractionDetail): string {
       <dt>Notes</dt><dd>${escapeHtml(interaction.notes ?? '—')}</dd>
       <dt>History status</dt><dd>${escapeHtml(STATUS_LABELS[interaction.historyStatusReason])}</dd>
     </dl>
+    ${uncertainDataPanel(interaction)}
     ${redFlagPanel(interaction)}
     <a class="review-link" href="/dashboard/interactions/${interaction.id}/review">Review / correct attribution &rarr;</a>`
   );
