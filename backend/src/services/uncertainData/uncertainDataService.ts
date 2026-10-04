@@ -1,5 +1,6 @@
 import { Transaction } from 'sequelize';
 import { ensureModelsSynced, IngestionBatch, RecruiterInteractionRecord } from '../../models/VendorIngestionRecord';
+import { getCurrentVersions } from '../correctionRequest/currentVersionService';
 import { recordUncertainDataFlags } from './uncertainDataFlagService';
 import { detectUncertainData, UncertainDataFlag } from './uncertainDataRules';
 
@@ -28,8 +29,12 @@ export async function detectStoredUncertainData(
   });
   const submittedAtByBatch = new Map(batches.map((batch) => [batch.id, batch.createdAt]));
 
+  // STORY-011: the rules judge the current version, so a job seeker's correction (say, adding
+  // the missing email) can clear the flag it answers.
+  const current = await getCurrentVersions(records, { transaction });
+
   return detectUncertainData(
-    records.map((record) => ({
+    current.map((record) => ({
       id: record.id,
       batchId: record.batchId,
       submittedAt: submittedAtByBatch.get(record.batchId)!,

@@ -1,7 +1,9 @@
-import { Transaction } from 'sequelize';
-import { sequelize } from '../../config/database';
+import { Op } from 'sequelize';
+import { serializedTransaction } from '../../config/serializedTransaction';
 import { ensureModelsSynced, RecruiterInteractionRecord } from '../../models/VendorIngestionRecord';
 import { InteractionDispute } from '../../models/InteractionDispute';
+import { CorrectableField, CorrectionRequest, CorrectionRequestRaiser } from '../../models/CorrectionRequest';
+import { CorrectionAnswer, CorrectionResponse } from '../../models/CorrectionResponse';
 import {
   HISTORY_REVIEW_DECISIONS,
   HistoryReviewDecision,
@@ -10,6 +12,8 @@ import {
 import { getHistoryStatuses, HistoryStatus, HistoryStatusReason } from '../historyStatus/historyStatusService';
 import { UncertainDataFlag as UncertainDataFlagRow } from '../../models/UncertainDataFlag';
 import { flagUncertainData } from '../uncertainData/uncertainDataService';
+import { getCurrentVersions } from '../correctionRequest/currentVersionService';
+import { raiseSystemCorrectionRequests } from '../correctionRequest/correctionRequestService';
 import { UNCERTAIN_DATA_RULES_VERSION, UncertainDataFlag } from '../uncertainData/uncertainDataRules';
 
 export class InvalidHistoryReviewInputError extends Error {
@@ -35,25 +39,21 @@ export class UncertaintyCheckUnavailableError extends Error {
   }
 }
 
+// STORY-011: the reviewer asked the job seeker a question; the ruling waits for the answer.
+// To rule without it, the reviewer withdraws the request first.
+export class AwaitingJobSeekerError extends Error {
+  constructor() {
+    super('A correction request is still waiting for the job seeker. Wait for the answer, or withdraw the request first.');
+    this.name = 'AwaitingJobSeekerError';
+  }
+}
+
 function requireText(value: string, message: string): string {
   const trimmed = value.trim();
   if (trimmed === '') {
     throw new InvalidHistoryReviewInputError(message);
   }
   return trimmed;
-}
-
-// Review writes run one at a time: each waits for the previous one to finish, so a
-// double-click or retry sees the first submission's row and does not write a duplicate.
-// SQLite locking cannot do this here -- Sequelize's sqlite driver errors on overlapping
-// transactions instead of queueing them. This holds for the single Node process VendorIQ
-// runs as; several processes sharing one database would need a database-level guard.
-let writeQueue: Promise<unknown> = Promise.resolve();
-
-function serializedTransaction<T>(work: (transaction: Transaction) => Promise<T>): Promise<T> {
-  const run = writeQueue.then(() => sequelize.transaction(work));
-  writeQueue = run.catch(() => undefined); // a failed write must not block the ones behind it
-  return run;
 }
 
 export interface DisputeInput {
@@ -126,13 +126,17 @@ export interface DecisionResult {
   note: string | null;
   decidedAt: Date;
   resolvedDisputeCount: number;
+  closedRequestCount: number;
 }
 
 /**
  * A data reviewer's ruling on an interaction in manual review. Only interactions currently
  * pending review can be ruled on: a second click, or a reviewer working from a stale queue,
  * gets NotPendingReviewError instead of silently overwriting an earlier ruling. Closing the
- * interaction's open disputes happens in the same transaction as recording the decision.
+ * interaction's open disputes happens in the same transaction as recording the decision, and so
+ * does closing its answered correction requests (STORY-011), and any open system-raised one,
+ * each linked to this decision. While a reviewer's own request still waits on the job seeker
+ * the ruling is refused with AwaitingJobSeekerError.
  * Returns null when the interaction does not exist.
  */
 export async function decideHistoryReview(input: DecisionInput): Promise<DecisionResult | null> {
@@ -153,6 +157,9 @@ export async function decideHistoryReview(input: DecisionInput): Promise<Decisio
     if (status.status !== 'pending_review') {
       throw new NotPendingReviewError(status.status);
     }
+    if (status.reason === 'awaiting_job_seeker') {
+      throw new AwaitingJobSeekerError();
+    }
     if (status.uncertainFlags === null) {
       throw new UncertaintyCheckUnavailableError();
     }
@@ -165,6 +172,24 @@ export async function decideHistoryReview(input: DecisionInput): Promise<Decisio
       { resolvedByDecisionId: created.id },
       { where: { interactionId: input.interactionId, resolvedByDecisionId: null }, transaction }
     );
+    const [closedRequestCount] = await CorrectionRequest.update(
+      {
+        status: 'closed',
+        openKey: null,
+        closedBy: reviewerId,
+        closedAt: created.decidedAt,
+        closedByDecisionId: created.id,
+      },
+      {
+        where: {
+          interactionId: input.interactionId,
+          // Answered requests, plus any system request the job seeker has not answered yet: the
+          // reviewer has now ruled without waiting for it (STORY-005 data never waits on a rule).
+          [Op.or]: [{ status: 'answered' }, { status: 'open', raisedByType: 'system' }],
+        },
+        transaction,
+      }
+    );
 
     return {
       decisionId: created.id,
@@ -174,6 +199,7 @@ export async function decideHistoryReview(input: DecisionInput): Promise<Decisio
       note: created.note,
       decidedAt: created.decidedAt,
       resolvedDisputeCount,
+      closedRequestCount,
     };
   });
 }
@@ -189,24 +215,67 @@ export interface PendingReviewItem {
   // STORY-005: what a reviewer should check when the reason is 'uncertain'; empty otherwise.
   // null when the uncertain-data check could not run (decisions are paused until it can).
   uncertainFlags: UncertainDataFlag[] | null;
+  // STORY-011: fields a job seeker's correction changed (the values above are current), and
+  // what they were as originally submitted, so the reviewer sees both side by side.
+  correctedFields: CorrectableField[];
+  originalValues: Partial<Record<CorrectableField, string | Date | null>>;
+  // STORY-011: requests the job seeker has answered and the reviewer has not yet ruled on.
+  answeredRequests: AnsweredRequestItem[];
+  // STORY-011: system requests the job seeker has been sent but not answered yet. They do not
+  // hold up the reviewer, who may rule now or wait for the answer.
+  openRequests: OpenRequestItem[];
+}
+
+export interface OpenRequestItem {
+  requestId: number;
+  issueKey: string;
+  raisedByType: CorrectionRequestRaiser;
+  raisedBy: string;
+  reason: string;
+  raisedAt: Date;
+}
+
+export interface AnsweredRequestItem {
+  requestId: number;
+  issueKey: string;
+  raisedByType: CorrectionRequestRaiser;
+  raisedBy: string;
+  reason: string;
+  raisedAt: Date;
+  response: {
+    answer: CorrectionAnswer;
+    correctedValues: Record<string, string> | null;
+    reason: string;
+    respondedBy: string;
+    statement: string;
+    respondedAt: Date;
+  };
 }
 
 /**
  * The manual-review queue: every interaction that must not be shown as confirmed history
  * until a reviewer rules on it, with why it is here and any open disputes. Interactions held
  * only because the uncertain-data check could not run are left out: they are waiting on the
- * check, not on a person, and return by themselves (flagged or confirmed) once it runs.
+ * check, not on a person, and return by themselves (flagged or confirmed) once it runs. So are
+ * interactions waiting on the job seeker to answer a correction request (STORY-011): nothing
+ * there needs the reviewer until the answer arrives. Answered requests are listed with the
+ * answer, so the reviewer rules on what the job seeker attested.
  * Loads all interactions to work out their status -- fine at current volumes; page it when
  * the table grows.
  */
 export async function listPendingReview(): Promise<PendingReviewItem[]> {
   await ensureModelsSynced();
 
-  const records = await RecruiterInteractionRecord.findAll({ order: [['id', 'ASC']] });
+  // STORY-011: the reviewer sees the current version, with job seekers' corrections applied.
+  const records = await getCurrentVersions(await RecruiterInteractionRecord.findAll({ order: [['id', 'ASC']] }));
   const statuses = await getHistoryStatuses(records.map((record) => record.id));
   const pending = records.filter((record) => {
     const status = statuses.get(record.id);
-    return status?.status === 'pending_review' && status.reason !== 'uncertainty_unchecked';
+    return (
+      status?.status === 'pending_review' &&
+      status.reason !== 'uncertainty_unchecked' &&
+      status.reason !== 'awaiting_job_seeker'
+    );
   });
   if (pending.length === 0) {
     return [];
@@ -216,6 +285,51 @@ export async function listPendingReview(): Promise<PendingReviewItem[]> {
     where: { interactionId: pending.map((record) => record.id), resolvedByDecisionId: null },
     order: [['id', 'ASC']],
   });
+
+  const live = await CorrectionRequest.findAll({
+    where: { interactionId: pending.map((record) => record.id), status: ['open', 'answered'] },
+    order: [['id', 'ASC']],
+  });
+  const answered = live.filter((request) => request.status === 'answered');
+  const openItems = (interactionId: number): OpenRequestItem[] =>
+    live
+      .filter((request) => request.status === 'open' && request.interactionId === interactionId)
+      .map((request) => ({
+        requestId: request.id,
+        issueKey: request.issueKey,
+        raisedByType: request.raisedByType,
+        raisedBy: request.raisedBy,
+        reason: request.reason,
+        raisedAt: request.raisedAt,
+      }));
+  const responses = await CorrectionResponse.findAll({ where: { requestId: answered.map((request) => request.id) } });
+  const responseByRequest = new Map(responses.map((response) => [response.requestId, response]));
+  const answeredItems = (interactionId: number): AnsweredRequestItem[] =>
+    answered
+      .filter((request) => request.interactionId === interactionId)
+      .map((request) => {
+        const response = responseByRequest.get(request.id);
+        if (!response) {
+          // 'answered' is only ever set in the same transaction that stores the answer.
+          throw new Error(`Correction request ${request.id} is marked answered but has no answer`);
+        }
+        return {
+          requestId: request.id,
+          issueKey: request.issueKey,
+          raisedByType: request.raisedByType,
+          raisedBy: request.raisedBy,
+          reason: request.reason,
+          raisedAt: request.raisedAt,
+          response: {
+            answer: response.answer,
+            correctedValues: response.correctedValues === null ? null : JSON.parse(response.correctedValues),
+            reason: response.reason,
+            respondedBy: response.respondedBy,
+            statement: response.statement,
+            respondedAt: response.respondedAt,
+          },
+        };
+      });
 
   return pending.map((record) => ({
     interactionId: record.id,
@@ -229,6 +343,10 @@ export async function listPendingReview(): Promise<PendingReviewItem[]> {
       .map((dispute) => ({ disputedBy: dispute.disputedBy, reason: dispute.reason, disputedAt: dispute.disputedAt })),
     // undefined means "checked, nothing uncertain"; null (check unavailable) is passed on as is.
     uncertainFlags: statuses.get(record.id)!.uncertainFlags === undefined ? [] : statuses.get(record.id)!.uncertainFlags!,
+    correctedFields: record.correctedFields,
+    originalValues: record.originalValues,
+    answeredRequests: answeredItems(record.id),
+    openRequests: openItems(record.id),
   }));
 }
 
@@ -269,6 +387,14 @@ export async function listUncertainDataNotifications(): Promise<UncertainDataNot
     // eslint-disable-next-line no-console
     console.error('Uncertain-data catch-up flagging failed; returning the flags already recorded', err);
     refreshFailed = true;
+  }
+  // STORY-011 catch-up: raise any system correction request an upload failed to raise. It does
+  // not change which notifications are open, so a failure is logged and the list still returned.
+  try {
+    await raiseSystemCorrectionRequests();
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Catch-up raising of system correction requests failed; it will be retried on the next check', err);
   }
 
   const rows = await UncertainDataFlagRow.findAll({

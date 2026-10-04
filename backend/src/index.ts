@@ -3,6 +3,7 @@ import { vendorIngestionRouter } from './routes/vendorIngestionRoutes';
 import { recruiterInteractionRouter } from './routes/recruiterInteractionRoutes';
 import { dashboardRouter } from './routes/dashboardRoutes';
 import { historyReviewRouter } from './routes/historyReviewRoutes';
+import { correctionRequestRouter } from './routes/correctionRequestRoutes';
 import { ensureModelsSynced } from './models/VendorIngestionRecord';
 
 export function buildApp(): express.Express {
@@ -12,6 +13,7 @@ export function buildApp(): express.Express {
   app.use('/api/vendor-ingestion', vendorIngestionRouter);
   app.use('/api/interactions', recruiterInteractionRouter);
   app.use('/api/history-review', historyReviewRouter);
+  app.use('/api/correction-requests', correctionRequestRouter);
   app.use('/dashboard', dashboardRouter);
   return app;
 }

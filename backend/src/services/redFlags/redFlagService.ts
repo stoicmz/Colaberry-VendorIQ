@@ -1,5 +1,6 @@
 import { RecruiterInteractionRecord, ensureModelsSynced } from '../../models/VendorIngestionRecord';
 import { getHistoryStatuses } from '../historyStatus/historyStatusService';
+import { getCurrentVersions } from '../correctionRequest/currentVersionService';
 import { logRedFlagIdentifications } from './redFlagLogService';
 import { detectRedFlags, RedFlag } from './redFlagRules';
 
@@ -27,7 +28,8 @@ export async function identifyRedFlags(interactionIds: number[]): Promise<Map<nu
     const records = await RecruiterInteractionRecord.findAll({ order: [['id', 'ASC']] });
     const statuses = await getHistoryStatuses(records.map((record) => record.id));
     const requested = new Set(interactionIds);
-    const comparisonSet = records.filter(
+    // STORY-011: judged on the current version, with job seekers' corrections applied.
+    const comparisonSet = (await getCurrentVersions(records)).filter(
       (record) => requested.has(record.id) || statuses.get(record.id)?.status !== 'rejected'
     );
     const allFlags = detectRedFlags(comparisonSet);

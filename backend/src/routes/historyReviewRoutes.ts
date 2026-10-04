@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import {
+  AwaitingJobSeekerError,
   decideHistoryReview,
   disputeInteraction,
   InvalidHistoryReviewInputError,
@@ -104,6 +105,10 @@ historyReviewRouter.post('/interactions/:id/decision', async (req: Request, res:
     }
     if (err instanceof NotPendingReviewError) {
       res.status(409).json({ error: err.message, currentStatus: err.currentStatus });
+      return;
+    }
+    if (err instanceof AwaitingJobSeekerError) {
+      res.status(409).json({ error: err.message });
       return;
     }
     if (err instanceof UncertaintyCheckUnavailableError) {

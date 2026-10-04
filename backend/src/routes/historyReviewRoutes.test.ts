@@ -4,6 +4,7 @@ import { sequelize } from '../config/database';
 import { IngestionBatch, RecruiterInteractionRecord } from '../models/VendorIngestionRecord';
 import { SubmissionAttestation } from '../models/SubmissionAttestation';
 import { HistoryReviewDecision } from '../models/HistoryReviewDecision';
+import { CorrectionRequest } from '../models/CorrectionRequest';
 import * as historyReviewService from '../services/historyReview/historyReviewService';
 
 beforeEach(async () => {
@@ -128,6 +129,26 @@ describe('POST /api/history-review/interactions/:id/decision', () => {
 
     expect(response.status).toBe(409);
     expect(response.body.currentStatus).toBe('confirmed');
+    expect(await HistoryReviewDecision.count()).toBe(0);
+  });
+
+  it('refuses to rule while a correction request waits on the job seeker (409)', async () => {
+    const id = await seedInteraction(true);
+    await CorrectionRequest.create({
+      interactionId: id,
+      issueKey: 'reviewer:recruiterCompany',
+      raisedByType: 'reviewer',
+      raisedBy: 'rev-1',
+      reason: 'Company looks wrong',
+      openKey: 'reviewer:recruiterCompany',
+    });
+
+    const res = await request(buildApp())
+      .post(`/api/history-review/interactions/${id}/decision`)
+      .send({ reviewerId: 'rev-1', decision: 'confirmed' });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toContain('waiting for the job seeker');
     expect(await HistoryReviewDecision.count()).toBe(0);
   });
 

@@ -11,6 +11,7 @@ import {
 import { RawRow } from '../services/vendorIngestion/vendorIngestionRowValidator';
 import { cleanRows, logCleaningActions } from '../services/dataCleaning/dataCleaningService';
 import { flagUncertainData } from '../services/uncertainData/uncertainDataService';
+import { raiseSystemCorrectionRequests } from '../services/correctionRequest/correctionRequestService';
 import { ensureModelsSynced } from '../models/VendorIngestionRecord';
 import { IngestionAuditLog } from '../models/IngestionAuditLog';
 
@@ -131,6 +132,17 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         uncertainDataCheck = 'failed';
       }
 
+      // STORY-011: ask the job seeker for whatever identifies an unidentified recruiter (rule U1).
+      // Same reasoning: the upload stands, and the next notifications check raises it instead.
+      let correctionRequestCheck: 'completed' | 'failed' = 'completed';
+      try {
+        await raiseSystemCorrectionRequests();
+      } catch (requestErr) {
+        // eslint-disable-next-line no-console
+        console.error('Raising system correction requests failed after upload; it will be retried on the next notifications check', requestErr);
+        correctionRequestCheck = 'failed';
+      }
+
       res.status(200).json({
         correlationId,
         batchId: result.batchId,
@@ -142,6 +154,7 @@ vendorIngestionRouter.post('/upload', (req: Request, res: Response) => {
         errors: result.errors,
         attestation: result.attestation,
         uncertainDataCheck,
+        correctionRequestCheck,
       });
     } catch (err) {
       if (

@@ -1,3 +1,4 @@
+import { CorrectableField } from '../models/CorrectionRequest';
 import { renderDashboardPage, renderDetailPage } from './dashboardTemplates';
 
 describe('date rendering', () => {
@@ -24,6 +25,8 @@ describe('date rendering', () => {
       notes: null,
       historyStatus: 'confirmed' as const,
       historyStatusReason: 'attested' as const,
+      correctedFields: [] as CorrectableField[],
+      originalValues: {},
       redFlags: [],
       uncertainFlags: [],
     };
@@ -45,6 +48,8 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     recruiterName: 'Confirmed Recruiter',
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
+    correctedFields: [] as CorrectableField[],
+    originalValues: {},
     redFlags: [],
     uncertainFlags: [],
   };
@@ -54,6 +59,8 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     recruiterName: 'Disputed Recruiter',
     historyStatus: 'pending_review' as const,
     historyStatusReason: 'disputed' as const,
+    correctedFields: [] as CorrectableField[],
+    originalValues: {},
     redFlags: [],
     uncertainFlags: [],
   };
@@ -105,6 +112,8 @@ describe('red flag highlighting (STORY-004)', () => {
     interactionType: 'email',
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
+    correctedFields: [] as CorrectableField[],
+    originalValues: {},
     redFlags: [feeFlag, gmailFlag],
     uncertainFlags: [],
   };
@@ -175,6 +184,8 @@ describe('uncertain data (STORY-005)', () => {
     interactionType: 'email',
     historyStatus: 'pending_review' as const,
     historyStatusReason: 'uncertain' as const,
+    correctedFields: [] as CorrectableField[],
+    originalValues: {},
     redFlags: [],
     uncertainFlags: [unidentifiedFlag],
   };
@@ -185,6 +196,8 @@ describe('uncertain data (STORY-005)', () => {
     recruiterCompany: 'Acme',
     historyStatus: 'confirmed' as const,
     historyStatusReason: 'attested' as const,
+    correctedFields: [] as CorrectableField[],
+    originalValues: {},
     uncertainFlags: [],
   };
   const detailOf = <T extends object>(summary: T) => ({ ...summary, recruiterEmail: null, channel: null, notes: null });

@@ -503,21 +503,67 @@
       "criteria": [
         {
           "text": "Given a dataset, when I review it manually, then I can identify incomplete or incorrect data entries and request a correction from the job seeker.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Given a data entry that is flagged as incomplete, when the job seeker completes it, then the system records the new attested version and returns it for review.",
-          "passed": false
+          "passed": true
         },
         {
           "text": "Trust: Every manual review action is logged with the reviewer ID and timestamp.",
-          "passed": false
+          "passed": true
         }
       ],
-      "files_touched": [],
-      "tests_added": [],
-      "notes": null,
-      "updated_at": null,
+      "files_touched": [
+        "backend/src/config/serializedTransaction.test.ts",
+        "backend/src/config/serializedTransaction.ts",
+        "backend/src/index.ts",
+        "backend/src/models/CorrectionRequest.test.ts",
+        "backend/src/models/CorrectionRequest.ts",
+        "backend/src/models/CorrectionResponse.test.ts",
+        "backend/src/models/CorrectionResponse.ts",
+        "backend/src/models/VendorIngestionRecord.ts",
+        "backend/src/routes/correctionRequestRoutes.test.ts",
+        "backend/src/routes/correctionRequestRoutes.ts",
+        "backend/src/routes/dashboardCorrections.test.ts",
+        "backend/src/routes/dashboardDecision.test.ts",
+        "backend/src/routes/dashboardRequests.test.ts",
+        "backend/src/routes/dashboardRoutes.ts",
+        "backend/src/routes/historyReviewRoutes.test.ts",
+        "backend/src/routes/historyReviewRoutes.ts",
+        "backend/src/routes/systemCorrectionRequests.test.ts",
+        "backend/src/routes/vendorIngestionRoutes.ts",
+        "backend/src/services/correctionRequest/correctionRequestLifecycle.test.ts",
+        "backend/src/services/correctionRequest/correctionRequestService.test.ts",
+        "backend/src/services/correctionRequest/correctionRequestService.ts",
+        "backend/src/services/correctionRequest/currentVersionService.test.ts",
+        "backend/src/services/correctionRequest/currentVersionService.ts",
+        "backend/src/services/historyReview/historyReviewService.ts",
+        "backend/src/services/historyStatus/historyStatusService.test.ts",
+        "backend/src/services/historyStatus/historyStatusService.ts",
+        "backend/src/services/recruiterInteractions/recruiterInteractionsService.ts",
+        "backend/src/services/redFlags/redFlagService.ts",
+        "backend/src/services/uncertainData/uncertainDataService.ts",
+        "backend/src/views/dashboardTemplates.test.ts",
+        "backend/src/views/dashboardTemplates.ts"
+      ],
+      "tests_added": [
+        "backend/src/config/serializedTransaction.test.ts",
+        "backend/src/models/CorrectionRequest.test.ts",
+        "backend/src/models/CorrectionResponse.test.ts",
+        "backend/src/routes/correctionRequestRoutes.test.ts",
+        "backend/src/routes/dashboardCorrections.test.ts",
+        "backend/src/routes/dashboardDecision.test.ts",
+        "backend/src/routes/dashboardRequests.test.ts",
+        "backend/src/routes/historyReviewRoutes.test.ts",
+        "backend/src/routes/systemCorrectionRequests.test.ts",
+        "backend/src/services/correctionRequest/correctionRequestLifecycle.test.ts",
+        "backend/src/services/correctionRequest/correctionRequestService.test.ts",
+        "backend/src/services/correctionRequest/currentVersionService.test.ts",
+        "backend/src/services/historyStatus/historyStatusService.test.ts"
+      ],
+      "notes": "Reviewers never edit submitted data: a reviewer (or rule U1, automatically) raises a correction request; the job seeker answers with an attested correction, confirmation or 'unavailable', stored as a new version with the original kept; the reviewer's ruling closes it. Each action is logged with actor and time. Known limits: actor IDs are typed in (no login yet), and STORY-003's edit form still overwrites the stored row; a later correction to the same field displays over it, and STORY-016 removes that form.",
+      "updated_at": "2026-10-04T20:34:40.000Z",
       "verification": {
         "state": "in_progress",
         "criteria_passed": 0,

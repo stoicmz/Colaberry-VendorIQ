@@ -3,6 +3,7 @@ import { IngestionBatch, RecruiterInteractionRecord } from '../../models/VendorI
 import { SubmissionAttestation } from '../../models/SubmissionAttestation';
 import { InteractionDispute } from '../../models/InteractionDispute';
 import { HistoryReviewDecision } from '../../models/HistoryReviewDecision';
+import { CorrectionRequest } from '../../models/CorrectionRequest';
 import { deriveHistoryStatus, getHistoryStatuses } from './historyStatusService';
 import * as uncertainDataService from '../uncertainData/uncertainDataService';
 
@@ -37,7 +38,34 @@ describe('deriveHistoryStatus', () => {
   ] as const)(
     'attested=%s, uncertain=%s, openDispute=%s, latestDecision=%s -> %s (%s)',
     (attested, uncertain, hasOpenDispute, latestDecision, status, reason) => {
-      expect(deriveHistoryStatus({ attested, uncertain, hasOpenDispute, latestDecision })).toEqual({ status, reason });
+      expect(deriveHistoryStatus({ attested, uncertain, hasOpenDispute, latestDecision, liveRequest: null })).toEqual({
+        status,
+        reason,
+      });
+    }
+  );
+
+  // STORY-011: a live correction request comes before everything except that an open dispute
+  // outranks an answered one.
+  it.each([
+    // liveRequest, openDispute, latestDecision, uncertain -> reason
+    ['open', false, null, false, 'awaiting_job_seeker'],
+    ['open', true, null, false, 'awaiting_job_seeker'],
+    ['open', false, 'confirmed', false, 'awaiting_job_seeker'],
+    ['open', false, 'rejected', false, 'awaiting_job_seeker'],
+    ['open', false, null, true, 'awaiting_job_seeker'],
+    ['answered', false, null, false, 'correction_answered'],
+    ['answered', true, null, false, 'disputed'],
+    ['answered', false, 'confirmed', false, 'correction_answered'],
+    ['answered', false, null, true, 'correction_answered'],
+    ['answered', false, null, null, 'correction_answered'],
+  ] as const)(
+    'liveRequest=%s, openDispute=%s, latestDecision=%s, uncertain=%s -> pending_review (%s)',
+    (liveRequest, hasOpenDispute, latestDecision, uncertain, reason) => {
+      expect(deriveHistoryStatus({ attested: true, uncertain, hasOpenDispute, latestDecision, liveRequest })).toEqual({
+        status: 'pending_review',
+        reason,
+      });
     }
   );
 });
@@ -195,6 +223,52 @@ describe('getHistoryStatuses', () => {
       jest.spyOn(uncertainDataService, 'detectStoredUncertainData').mockRejectedValueOnce(new Error('rules crashed'));
       jest.spyOn(console, 'error').mockImplementation(() => undefined);
       expect((await getHistoryStatuses([id])).get(id)?.reason).toBe('uncertainty_unchecked');
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'confirmed', reason: 'attested' });
+    });
+  });
+
+  describe('correction requests (STORY-011)', () => {
+    let id: number;
+    beforeEach(async () => {
+      id = await seedInteraction({ attested: true, fileHash: 'c'.repeat(64) });
+    });
+
+    function request(status: 'open' | 'answered' | 'closed', issueKey = 'reviewer:recruiterCompany') {
+      return CorrectionRequest.create({
+        interactionId: id,
+        issueKey,
+        raisedByType: 'reviewer',
+        raisedBy: 'rev-1',
+        reason: 'Please check',
+        status,
+        openKey: status === 'closed' ? null : issueKey,
+        ...(status === 'closed' ? { closedBy: 'rev-1', closedAt: new Date(), closeReason: 'No longer needed' } : {}),
+      });
+    }
+
+    it('holds a confirmed interaction while a request waits on the job seeker', async () => {
+      await HistoryReviewDecision.create({ interactionId: id, reviewerId: 'rev-1', decision: 'confirmed', note: null });
+      await request('open');
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'pending_review', reason: 'awaiting_job_seeker' });
+    });
+
+    it('returns it to the reviewer once the request is answered', async () => {
+      await request('answered');
+
+      expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'pending_review', reason: 'correction_answered' });
+    });
+
+    it('keeps waiting on the job seeker while any request is still open', async () => {
+      await request('answered', 'reviewer:recruiterCompany');
+      await request('open', 'reviewer:interactionDate');
+
+      expect((await getHistoryStatuses([id])).get(id)?.reason).toBe('awaiting_job_seeker');
+    });
+
+    it('ignores a closed request', async () => {
+      await request('closed');
 
       expect((await getHistoryStatuses([id])).get(id)).toEqual({ status: 'confirmed', reason: 'attested' });
     });
