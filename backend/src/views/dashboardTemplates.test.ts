@@ -1,5 +1,5 @@
 import { CorrectableField } from '../models/CorrectionRequest';
-import { renderDashboardPage, renderDetailPage } from './dashboardTemplates';
+import { renderDashboardPage, renderDetailPage, renderRequestsPage } from './dashboardTemplates';
 
 describe('date rendering', () => {
   const originalTz = process.env.TZ;
@@ -72,7 +72,7 @@ describe('confirmed history vs manual review (REQ-019)', () => {
     expect(reviewHeading).toBeGreaterThan(-1);
     expect(html.indexOf('Confirmed Recruiter')).toBeLessThan(reviewHeading);
     expect(html.indexOf('Disputed Recruiter')).toBeGreaterThan(reviewHeading);
-    expect(html).toContain('<td>Disputed</td>');
+    expect(html).toContain('<td><span class="chip chip-amber">Disputed</span></td>');
   });
 
   it('says there is no confirmed history yet, rather than "nothing ingested", when all rows are pending', () => {
@@ -150,6 +150,22 @@ describe('red flag highlighting (STORY-004)', () => {
     expect(html).toContain('<strong>Personal email domain used while representing a company</strong> — gmail.com, representing Acme');
   });
 
+  it('shows a confirmed record as a true record, with its red flags beside it -- never as "safe"', () => {
+    const html = renderDetailPage(detail);
+
+    expect(html).toContain(
+      '<span class="chip chip-green">Confirmed record</span> <span class="chip chip-red">2 red flags — check before engaging</span>'
+    );
+  });
+
+  it('shows only the status chip when there are no red flags, or the check could not run', () => {
+    for (const redFlags of [[], null]) {
+      const html = renderDetailPage({ ...detail, redFlags });
+      expect(html).toContain('<dd><span class="chip chip-green">Confirmed record</span></dd>');
+      expect(html).not.toContain('<span class="chip chip-red">');
+    }
+  });
+
   it('says the check is unavailable, instead of looking clean, when red flags are null', () => {
     const unchecked = { ...summary, redFlags: null };
 
@@ -220,8 +236,8 @@ describe('uncertain data (STORY-005)', () => {
   it('says why it is waiting in the review section of the dashboard', () => {
     const html = renderDashboardPage({ confirmed: [], pendingReview: [uncertain] });
 
-    expect(html).toContain('<td>Uncertain data</td>');
-    expect(html).toContain('or were flagged as uncertain data');
+    expect(html).toContain('<td><span class="chip chip-amber">Uncertain data</span></td>');
+    expect(html).toContain('were flagged as uncertain data');
   });
 
   it('shows no flag at all for certain data', () => {
@@ -239,7 +255,7 @@ describe('uncertain data (STORY-005)', () => {
 
     expect(list).toContain(UNAVAILABLE_TEXT);
     expect(list).toContain('held for review, not shown as confirmed');
-    expect(list).toContain('<td>Not yet checked</td>');
+    expect(list).toContain('<td><span class="chip chip-amber">Not yet checked</span></td>');
     expect(page).toContain(UNAVAILABLE_TEXT);
     expect(page).not.toContain(PANEL);
   });
@@ -251,5 +267,23 @@ describe('uncertain data (STORY-005)', () => {
 
     expect(html).not.toContain('<b>x</b>');
     expect(html).toContain('Only a name is recorded: &lt;b&gt;x&lt;/b&gt;');
+  });
+});
+
+describe('navigation bar', () => {
+  const history = { confirmed: [], pendingReview: [] };
+
+  it('appears on every page, linking the dashboard and the requests page', () => {
+    for (const html of [renderDashboardPage(history), renderRequestsPage([])]) {
+      expect(html).toContain('<nav class="site-nav" aria-label="Main">');
+      expect(html).toContain('href="/dashboard"');
+      expect(html).toContain('href="/dashboard/requests"');
+    }
+  });
+
+  it('marks the page you are on', () => {
+    expect(renderDashboardPage(history)).toContain('<a href="/dashboard" class="active" aria-current="page">Dashboard</a>');
+    expect(renderRequestsPage([])).toContain('<a href="/dashboard/requests" class="active" aria-current="page">Requests</a>');
+    expect(renderRequestsPage([])).toContain('<a href="/dashboard">Dashboard</a>');
   });
 });

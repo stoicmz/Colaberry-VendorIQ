@@ -80,7 +80,7 @@ describe('GET /dashboard', () => {
     const after = await request(buildApp()).get('/dashboard');
     expect(after.text).toContain('No confirmed recruiter interactions yet.');
     expect(after.text.indexOf('Jane &lt;Doe&gt;')).toBeGreaterThan(after.text.indexOf(reviewHeading));
-    expect(after.text).toContain('<td>Disputed</td>');
+    expect(after.text).toContain('<td><span class="chip chip-amber">Disputed</span></td>');
   });
 
   it('shows an empty state instead of an error when there is no data yet', async () => {

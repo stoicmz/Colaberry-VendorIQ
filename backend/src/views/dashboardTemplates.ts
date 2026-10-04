@@ -27,72 +27,124 @@ function formatDate(date: Date): string {
   });
 }
 
-function layout(title: string, body: string): string {
+type NavSection = 'dashboard' | 'requests';
+
+function layout(title: string, body: string, active?: NavSection): string {
+  const navLink = (section: NavSection, href: string, label: string) =>
+    `<a href="${href}"${active === section ? ' class="active" aria-current="page"' : ''}>${label}</a>`;
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escapeHtml(title)} - VendorIQ</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 720px; color: #1a1a1a; }
-  h1 { font-size: 1.4rem; }
-  table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-  th, td { text-align: left; padding: 0.5rem; border-bottom: 1px solid #ddd; }
-  a { color: #0b5fff; text-decoration: none; }
+  :root {
+    --navy: #14304f; --navy-2: #1f4a75; --ink: #1d2433; --muted: #5b6475; --line: #dfe3ea; --bg: #f4f6f9; --card: #ffffff;
+    --blue: #1d5fd1; --blue-soft: #eaf1fd; --blue-line: #c4d6f6;
+    --amber-soft: #fff6e0; --amber-line: #ecd08a; --amber-ink: #6b4e00;
+    --red-soft: #fdecec; --red-line: #eab1b1; --red-ink: #8a1c1c;
+    --green-soft: #e9f6ec; --green-line: #a9d8b4; --green-ink: #1e5b2c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; font-size: 16px; line-height: 1.5; }
+  .site-header { background: var(--navy); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+  .site-header .wrap { display: flex; align-items: baseline; gap: 1rem; padding-top: 0.9rem; padding-bottom: 0.9rem; }
+  .brand { color: #fff; font-size: 1.35rem; font-weight: 700; letter-spacing: 0.02em; }
+  .brand:hover { text-decoration: none; }
+  .tagline { color: #c9d6e8; font-size: 0.95rem; }
+  .site-nav { margin-left: auto; display: flex; gap: 0.25rem; }
+  .site-nav a { color: #dbe5f2; padding: 0.35rem 0.85rem; border-radius: 6px; font-weight: 600; }
+  .site-nav a:hover { background: var(--navy-2); color: #fff; text-decoration: none; }
+  .site-nav a.active { background: #fff; color: var(--navy); }
+  .wrap { max-width: 960px; margin: 0 auto; padding-left: 1.5rem; padding-right: 1.5rem; }
+  main.wrap { padding-top: 1.75rem; padding-bottom: 3rem; }
+  h1 { font-size: 1.75rem; margin: 0.25rem 0 1rem; color: var(--navy); }
+  h2 { font-size: 1.2rem; margin: 2rem 0 0.75rem; color: var(--navy); }
+  a { color: var(--blue); text-decoration: none; }
   a:hover { text-decoration: underline; }
-  .error { background: #fdeaea; border: 1px solid #e0a0a0; padding: 1rem; border-radius: 4px; }
-  .empty { color: #666; padding: 1rem 0; }
-  dl { display: grid; grid-template-columns: 10rem 1fr; row-gap: 0.5rem; }
-  dt { font-weight: 600; color: #444; }
-  .back { display: inline-block; margin-bottom: 1rem; }
-  h2 { font-size: 1.1rem; margin-top: 2rem; }
-  .pending { background: #fff8e6; border: 1px solid #e8cf8a; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
-  .pending h2 { margin-top: 0; }
-  .pending-note { color: #6b5200; margin: 0.25rem 0 0; }
-  .review-link { display: inline-block; margin-top: 1rem; }
-  form.review-form { margin-top: 1rem; display: grid; gap: 0.75rem; max-width: 28rem; }
-  form.review-form label { display: grid; gap: 0.25rem; font-weight: 600; color: #444; }
-  form.review-form input { padding: 0.4rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
-  form.review-form button { justify-self: start; padding: 0.5rem 1.25rem; background: #0b5fff; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-  .red-flag-badge { display: inline-block; margin-left: 0.5rem; padding: 0.05rem 0.5rem; font-size: 0.8rem; color: #8a1c1c; background: #fdeaea; border: 1px solid #e0a0a0; border-radius: 999px; }
-  .red-flags { background: #fdeaea; border: 1px solid #e0a0a0; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
-  .red-flags h2 { margin-top: 0; }
-  .red-flags-note { color: #6b1a1a; margin: 0.25rem 0 0.5rem; }
-  .uncertain-data { background: #fff8e6; border: 1px solid #e8cf8a; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
-  .uncertain-data h2 { margin-top: 0; }
-  .uncertain-data-note { color: #6b5200; margin: 0.25rem 0 0.5rem; }
-  .check-unavailable { background: #fff8e6; border: 1px solid #e8cf8a; color: #6b5200; padding: 0.75rem 1rem; border-radius: 4px; margin: 1rem 0; }
-  form.review-form select, form.review-form textarea { padding: 0.4rem; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
-  .corrected { color: #3d5a00; font-size: 0.9rem; }
-  .corrections { border: 1px solid #ccd; padding: 0.75rem 1rem; border-radius: 4px; margin-top: 2rem; }
-  .corrections h2 { margin-top: 0; }
-  .corrections article { border-top: 1px solid #eee; padding: 0.75rem 0; }
-  .corrections article:first-of-type { border-top: none; }
-  .corrections .meta { color: #555; font-size: 0.9rem; margin: 0.25rem 0; }
-  .corrections .answer { background: #f4f7ff; padding: 0.5rem 0.75rem; border-radius: 4px; margin: 0.5rem 0; }
-  form.inline-form { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: end; margin-top: 0.5rem; }
-  form.inline-form label { display: grid; gap: 0.15rem; font-size: 0.85rem; color: #444; }
-  form.inline-form input { padding: 0.3rem; border: 1px solid #ccc; border-radius: 4px; }
-  form.inline-form button { padding: 0.35rem 0.9rem; border: 1px solid #0b5fff; background: #fff; color: #0b5fff; border-radius: 4px; cursor: pointer; }
-  .requests-link { background: #f4f7ff; border: 1px solid #c9d6ff; padding: 0.5rem 1rem; border-radius: 4px; }
-  .notice { background: #eef8ee; border: 1px solid #a8d5a8; padding: 0.75rem 1rem; border-radius: 4px; }
-  .request-card { border: 1px solid #ddd; border-radius: 4px; padding: 0.75rem 1rem; margin-top: 1rem; }
-  .request-card .meta { color: #555; font-size: 0.9rem; margin: 0.25rem 0; }
-  fieldset { border: 1px solid #ddd; border-radius: 4px; padding: 0.5rem 1rem; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  th, td { text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--line); }
+  th { background: #eef1f6; color: var(--muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  tbody tr:nth-child(even) { background: #fafbfd; }
+  tbody tr:hover { background: var(--blue-soft); }
+  tbody tr:last-child td { border-bottom: none; }
+  .error { background: var(--red-soft); border: 1px solid var(--red-line); color: var(--red-ink); padding: 0.9rem 1.1rem; border-radius: 8px; margin: 0.75rem 0; }
+  .empty { color: var(--muted); padding: 1rem 0; }
+  dl { display: grid; grid-template-columns: 11rem 1fr; row-gap: 0.6rem; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 1.1rem 1.25rem; }
+  dt { font-weight: 600; color: var(--muted); }
+  dd { margin: 0; }
+  .back { display: inline-block; margin-bottom: 0.75rem; font-size: 0.95rem; }
+  .pending, .red-flags, .uncertain-data, .corrections, .request-card { border-radius: 8px; padding: 1rem 1.25rem; margin-top: 1.5rem; box-shadow: 0 1px 2px rgba(20,48,79,0.06); }
+  .pending h2, .red-flags h2, .uncertain-data h2, .corrections h2 { margin-top: 0; }
+  .pending { background: var(--amber-soft); border: 1px solid var(--amber-line); }
+  .pending-note { color: var(--amber-ink); margin: 0.25rem 0 0; }
+  .review-link { display: inline-block; margin-top: 1rem; font-weight: 600; }
+  form.review-form { margin-top: 1rem; display: grid; gap: 0.9rem; max-width: 32rem; }
+  form.review-form label { display: grid; gap: 0.3rem; font-weight: 600; color: var(--ink); }
+  form.review-form input, form.review-form select, form.review-form textarea { padding: 0.55rem 0.65rem; font-size: 1rem; border: 1px solid #c3cad6; border-radius: 6px; font-family: inherit; background: #fff; }
+  form.review-form input:focus, form.review-form select:focus, form.review-form textarea:focus { outline: 2px solid var(--blue-line); border-color: var(--blue); }
+  form.review-form button { justify-self: start; padding: 0.6rem 1.4rem; background: var(--blue); color: #fff; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  form.review-form button:hover { background: #164ca8; }
+  .red-flag-badge { display: inline-block; margin-left: 0.5rem; padding: 0.1rem 0.6rem; font-size: 0.8rem; font-weight: 600; color: var(--red-ink); background: var(--red-soft); border: 1px solid var(--red-line); border-radius: 999px; }
+  .red-flags { background: var(--red-soft); border: 1px solid var(--red-line); }
+  .red-flags-note { color: var(--red-ink); margin: 0.25rem 0 0.5rem; }
+  .uncertain-data { background: var(--amber-soft); border: 1px solid var(--amber-line); }
+  .uncertain-data-note { color: var(--amber-ink); margin: 0.25rem 0 0.5rem; }
+  .red-flags ul, .uncertain-data ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+  .red-flags li, .uncertain-data li { margin-bottom: 0.35rem; }
+  .check-unavailable { background: var(--amber-soft); border: 1px solid var(--amber-line); color: var(--amber-ink); padding: 0.8rem 1.1rem; border-radius: 8px; margin: 1rem 0; }
+  .corrected { color: var(--green-ink); font-size: 0.9rem; }
+  .corrections { background: var(--card); border: 1px solid var(--line); }
+  .corrections article { border-top: 1px solid var(--line); padding: 0.9rem 0; }
+  .corrections article:first-of-type { border-top: none; padding-top: 0.25rem; }
+  .corrections .meta, .request-card .meta { color: var(--muted); font-size: 0.92rem; margin: 0.25rem 0; }
+  .corrections .answer { background: var(--blue-soft); border-left: 3px solid var(--blue); padding: 0.6rem 0.85rem; border-radius: 4px; margin: 0.6rem 0; }
+  form.inline-form { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; margin-top: 0.6rem; }
+  form.inline-form label { display: grid; gap: 0.2rem; font-size: 0.85rem; color: var(--muted); }
+  form.inline-form input { padding: 0.4rem 0.5rem; border: 1px solid #c3cad6; border-radius: 6px; font-family: inherit; }
+  form.inline-form button { padding: 0.45rem 1rem; border: 1px solid var(--blue); background: #fff; color: var(--blue); border-radius: 6px; font-weight: 600; cursor: pointer; }
+  form.inline-form button:hover { background: var(--blue-soft); }
+  .requests-link { background: var(--blue-soft); border: 1px solid var(--blue-line); padding: 0.75rem 1.1rem; border-radius: 8px; font-weight: 600; }
+  .notice { background: var(--green-soft); border: 1px solid var(--green-line); color: var(--green-ink); padding: 0.8rem 1.1rem; border-radius: 8px; }
+  .request-card { background: var(--card); border: 1px solid var(--line); }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; padding: 0.6rem 1rem 0.8rem; background: var(--card); }
+  legend { font-weight: 600; padding: 0 0.3rem; }
   fieldset label { font-weight: normal !important; display: flex !important; gap: 0.5rem; align-items: baseline; }
   .attest { display: flex !important; gap: 0.5rem; align-items: baseline; font-weight: normal !important; }
+  .chip { display: inline-block; padding: 0.15rem 0.7rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; border: 1px solid; white-space: nowrap; }
+  .chip-green { background: var(--green-soft); border-color: var(--green-line); color: var(--green-ink); }
+  .chip-amber { background: var(--amber-soft); border-color: var(--amber-line); color: var(--amber-ink); }
+  .chip-red { background: var(--red-soft); border-color: var(--red-line); color: var(--red-ink); }
+  .chip-grey { background: #eef0f3; border-color: #cfd4dc; color: #4a5263; }
+  .section-confirmed { border-left: 4px solid var(--green-line); padding-left: 0.75rem; margin-top: 1.5rem; }
+  .pending h2 { border-left: 4px solid var(--amber-line); padding-left: 0.75rem; }
 </style>
 </head>
 <body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/dashboard">VendorIQ</a>
+    <span class="tagline">Recruiter interactions, with the evidence</span>
+    <nav class="site-nav" aria-label="Main">
+      ${navLink('dashboard', '/dashboard', 'Dashboard')}
+      ${navLink('requests', '/dashboard/requests', 'Requests')}
+    </nav>
+  </div>
+</header>
+<main class="wrap">
 ${body}
+</main>
 </body>
 </html>`;
 }
 
 // Plain-language labels for why an interaction is, or is not, confirmed history (REQ-019).
 const STATUS_LABELS: Record<InteractionSummary['historyStatusReason'], string> = {
-  attested: 'Confirmed',
-  reviewer_confirmed: 'Confirmed by a reviewer',
+  // 'Confirmed' means the record is true -- that the interaction happened as recorded -- not that
+  // the recruiter is safe. Red flags are shown beside it, never folded into it (REQ-015).
+  attested: 'Confirmed record',
+  reviewer_confirmed: 'Confirmed record · checked by a reviewer',
   awaiting_job_seeker: 'Waiting for the job seeker: correction requested',
   disputed: 'Waiting for review: disputed',
   correction_answered: 'Waiting for review: correction answered',
@@ -101,6 +153,18 @@ const STATUS_LABELS: Record<InteractionSummary['historyStatusReason'], string> =
   uncertainty_unchecked: 'Waiting: not yet checked for uncertain data',
   reviewer_rejected: 'Rejected by a reviewer',
 };
+
+// The history status as a coloured chip: green confirmed, amber waiting, grey rejected. Red flags
+// get their own red chip beside it, so a confirmed record is never read as "this recruiter is safe".
+function statusChip(i: InteractionSummary): string {
+  const tone = i.historyStatus === 'confirmed' ? 'chip-green' : i.historyStatus === 'rejected' ? 'chip-grey' : 'chip-amber';
+  const status = `<span class="chip ${tone}">${escapeHtml(STATUS_LABELS[i.historyStatusReason])}</span>`;
+  if (!i.redFlags || i.redFlags.length === 0) {
+    return status;
+  }
+  const count = i.redFlags.length === 1 ? '1 red flag' : `${i.redFlags.length} red flags`;
+  return `${status} <span class="chip chip-red">${count} — check before engaging</span>`;
+}
 
 const PENDING_REASON_LABELS: Partial<Record<InteractionSummary['historyStatusReason'], string>> = {
   awaiting_job_seeker: 'Correction requested',
@@ -195,7 +259,8 @@ export function renderDashboardPage(
 
   let confirmedBody: string;
   if (confirmed.length > 0) {
-    confirmedBody = `<table>
+    confirmedBody = `<h2 class="section-confirmed">Confirmed recruiter history</h2>
+      <table>
         <thead><tr><th>Recruiter</th><th>Company</th><th>Type</th><th>Date</th></tr></thead>
         <tbody>${confirmedRows}</tbody>
       </table>`;
@@ -212,7 +277,7 @@ export function renderDashboardPage(
         <td><a href="/dashboard/interactions/${i.id}">${escapeHtml(i.recruiterName)}</a>${redFlagBadge(i)}</td>
         <td>${escapeHtml(i.recruiterCompany ?? '—')}</td>
         <td>${formatDate(i.interactionDate)}</td>
-        <td>${escapeHtml(PENDING_REASON_LABELS[i.historyStatusReason] ?? i.historyStatusReason)}</td>
+        <td><span class="chip chip-amber">${escapeHtml(PENDING_REASON_LABELS[i.historyStatusReason] ?? i.historyStatusReason)}</span></td>
       </tr>`
     )
     .join('\n');
@@ -222,7 +287,7 @@ export function renderDashboardPage(
       ? ''
       : `<section class="pending">
         <h2>Waiting for review — not confirmed recruiter history</h2>
-        <p class="pending-note">These interactions were not attested as factual, have been disputed, or were flagged as uncertain data. A data reviewer must check them before they count as confirmed.</p>
+        <p class="pending-note">These interactions were not attested as factual, have been disputed, were flagged as uncertain data, or have a correction under way. A data reviewer must check them before they count as confirmed.</p>
         <table>
           <thead><tr><th>Recruiter</th><th>Company</th><th>Date</th><th>Why</th></tr></thead>
           <tbody>${pendingRows}</tbody>
@@ -231,7 +296,8 @@ export function renderDashboardPage(
 
   return layout(
     'Dashboard',
-    `<h1>Your Recruiter Interactions</h1>${requestsLink}${checkUnavailable}${confirmedBody}${pendingSection}`
+    `<h1>Your Recruiter Interactions</h1>${requestsLink}${checkUnavailable}${confirmedBody}${pendingSection}`,
+    'dashboard'
   );
 }
 
@@ -405,7 +471,7 @@ export function renderDetailPage(
       <dt>Channel</dt><dd>${detailValue(interaction, 'channel')}</dd>
       <dt>Date</dt><dd>${detailValue(interaction, 'interactionDate')}</dd>
       <dt>Notes</dt><dd>${detailValue(interaction, 'notes')}</dd>
-      <dt>History status</dt><dd>${escapeHtml(STATUS_LABELS[interaction.historyStatusReason])}</dd>
+      <dt>History status</dt><dd>${statusChip(interaction)}</dd>
     </dl>
     ${uncertainDataPanel(interaction)}
     ${redFlagPanel(interaction)}
@@ -517,7 +583,8 @@ export function renderRequestsPage(items: OpenCorrectionRequestItem[], options: 
     `<a class="back" href="/dashboard">&larr; Back to dashboard</a>
     <h1>Requests for you</h1>
     <p>A data reviewer, or an automatic data check, has asked about interactions you submitted. You can correct the data, confirm it is right as entered, or say the information is unavailable. Your original submission is always kept.</p>
-    ${notice}${body}`
+    ${notice}${body}`,
+    'requests'
   );
 }
 
@@ -578,7 +645,8 @@ export function renderAnswerForm(
       </label>
       <label class="attest"><input type="checkbox" name="attest" value="yes"${values.attested ? ' checked' : ''} required> ${escapeHtml(statement)}</label>
       <button type="submit">Send answer</button>
-    </form>`
+    </form>`,
+    'requests'
   );
 }
 
