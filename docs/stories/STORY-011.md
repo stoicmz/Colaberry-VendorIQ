@@ -27,8 +27,8 @@ the same criteria out of `.colaberry/progress.json`, which Claude Code keeps in
 step (see the managed block in CLAUDE.md). Ticking something you have not
 actually met only misleads you.
 
-- [ ] Given a dataset, when I review it manually, then I can identify and correct incomplete or incorrect data entries.
-- [ ] Given a data entry that is flagged as incomplete, when I complete it, then the system updates the entry accordingly.
+- [ ] Given a dataset, when I review it manually, then I can identify incomplete or incorrect data entries and request a correction from the job seeker.
+- [ ] Given a data entry that is flagged as incomplete, when the job seeker completes it, then the system records the new attested version and returns it for review.
 - [ ] Trust: Every manual review action is logged with the reviewer ID and timestamp.
 
 When every box above is ticked, stop and show the demo.
