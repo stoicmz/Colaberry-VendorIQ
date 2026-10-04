@@ -206,9 +206,9 @@
         "STORY-003",
         "STORY-014"
       ],
-      "starts_on": "2026-08-20",
-      "ends_on": "2026-08-28",
-      "is_demo_target": false
+      "starts_on": "2026-10-01",
+      "ends_on": "2026-10-01",
+      "is_demo_target": true
     },
     {
       "key": "r1",
@@ -223,9 +223,9 @@
         "STORY-011",
         "STORY-015"
       ],
-      "starts_on": "2026-08-24",
-      "ends_on": "2026-09-06",
-      "is_demo_target": true
+      "starts_on": "2026-10-01",
+      "ends_on": "2026-10-01",
+      "is_demo_target": false
     },
     {
       "key": "r2",
@@ -241,8 +241,8 @@
         "STORY-013",
         "STORY-016"
       ],
-      "starts_on": "2026-09-01",
-      "ends_on": "2026-09-14",
+      "starts_on": "2026-10-01",
+      "ends_on": "2026-10-01",
       "is_demo_target": false
     },
     {
@@ -256,8 +256,8 @@
         "STORY-008",
         "STORY-009"
       ],
-      "starts_on": "2026-09-14",
-      "ends_on": "2026-09-23",
+      "starts_on": "2026-10-01",
+      "ends_on": "2026-10-01",
       "is_demo_target": false
     },
     {
@@ -297,7 +297,7 @@
         "File contains no data"
       ],
       "task_guidance": "Implement file upload functionality and parse CSV/XLSX data for ingestion.",
-      "due_on": "2026-08-20",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-20"
     },
     {
@@ -322,7 +322,7 @@
         "Interaction details fail to load."
       ],
       "task_guidance": "Implement a dashboard view that lists recruiter interactions with a clickable link to view details. Ensure navigation from dashboard to detail view is within three clicks.",
-      "due_on": "2026-08-20",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-20"
     },
     {
@@ -347,7 +347,7 @@
         "Reviewer ID is not logged with corrections."
       ],
       "task_guidance": "Implement a manual review interface that allows data reviewers to verify and correct recruiter attributions. Ensure that each correction is logged with the reviewer ID and timestamp.",
-      "due_on": "2026-08-24",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-24"
     },
     {
@@ -373,7 +373,7 @@
         "Highlighting fails"
       ],
       "task_guidance": "Implement logic to identify and highlight red flags in recruiter interactions.",
-      "due_on": "2026-08-24",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-26"
     },
     {
@@ -399,7 +399,7 @@
         "Notification fails"
       ],
       "task_guidance": "Implement a system to flag uncertain data for manual review.",
-      "due_on": "2026-08-28",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-31"
     },
     {
@@ -425,7 +425,7 @@
         "Display fails"
       ],
       "task_guidance": "Enhance the dashboard to display message frequency and timestamps.",
-      "due_on": "2026-09-01",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-02"
     },
     {
@@ -451,7 +451,7 @@
         "Tooltip fails to load"
       ],
       "task_guidance": "Implement explanatory tooltips or sections on the dashboard.",
-      "due_on": "2026-09-04",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-06"
     },
     {
@@ -477,7 +477,7 @@
         "Report generation fails"
       ],
       "task_guidance": "Set up a feedback collection mechanism during the trial period.",
-      "due_on": "2026-09-14",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-14"
     },
     {
@@ -503,7 +503,7 @@
         "Improvement areas are not identified"
       ],
       "task_guidance": "Analyze user feedback to assess system reliability.",
-      "due_on": "2026-09-23",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-23"
     },
     {
@@ -555,7 +555,7 @@
         "Reviewer actions are not logged."
       ],
       "task_guidance": "Create a manual review process that allows data reviewers to check for completeness and correctness of data entries. Ensure that all actions are logged with reviewer ID and timestamp.",
-      "due_on": "2026-09-02",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-06"
     },
     {
@@ -581,7 +581,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Enhance the interaction display to show reply status for each recruiter interaction. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-09-07",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-10"
     },
     {
@@ -607,7 +607,7 @@
         "User views are not logged."
       ],
       "task_guidance": "Implement a display feature that shows responsiveness and follow-up patterns for recruiters. Ensure that each view is logged with user ID and timestamp.",
-      "due_on": "2026-09-11",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-09-14"
     },
     {
@@ -631,7 +631,7 @@
         "Cleaning actions are not logged."
       ],
       "task_guidance": "Develop a data cleaning process that checks for and corrects invalid data entries before ingestion. Ensure that all cleaning actions are logged with administrator ID and timestamp.",
-      "due_on": "2026-08-28",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-08-28"
     },
     {
@@ -650,7 +650,7 @@
       "owner_agent": "Development Team",
       "failure_paths": [],
       "task_guidance": "Author: the student (REQ-019, safety/guardrails). Attestation is captured at submission time and stored with the submission; disputed or unattested rows must never reach the confirmed-history view without manual review.",
-      "due_on": "2026-09-06",
+      "due_on": "2026-10-01",
       "due_baseline_on": "2026-10-01"
     },
     {
@@ -673,8 +673,8 @@
       "owner_agent": "Development Team",
       "failure_paths": [],
       "task_guidance": "Build the request-and-response workflow on top of the correction workflow from STORY-011. The reviewer raises a request with a reason and has no path to edit the attribution directly. The job seeker answers with a correction, a confirmation, or an unavailable, each carrying a reason. A correction is stored as a new attested version with the original kept, never as an overwrite.",
-      "due_on": "2026-09-14",
-      "due_baseline_on": "2026-09-14"
+      "due_on": "2026-10-01",
+      "due_baseline_on": "2026-10-04"
     }
   ],
   "agents": [],
@@ -686,12 +686,13 @@
     "plan_sha256": "fc44fc203bac3ec3f5d6151300c577228b533c1a7ab8fb6abd1dfcffc7105d3a"
   },
   "schedule": {
-    "build_start": "2026-08-20",
+    "build_start": "2026-10-01",
     "build_end": "2026-10-01",
     "demo_day": "2026-10-08",
-    "build_weeks": 6,
-    "demo_release_key": "r1",
+    "build_weeks": 1,
+    "demo_release_key": "r0",
     "roadmap_release_keys": [
+      "r1",
       "r2",
       "r3",
       "r4"

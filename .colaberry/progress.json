@@ -3,13 +3,13 @@
   "project": "VendorIQ",
   "totals": {
     "stories_total": 17,
-    "stories_verified": 8,
+    "stories_verified": 9,
     "stories_submitted": 0,
     "stories_in_progress": 8,
-    "stories_not_started": 1,
+    "stories_not_started": 0,
     "criteria_total": 53,
-    "criteria_passed": 26,
-    "points_awarded": 415
+    "criteria_passed": 29,
+    "points_awarded": 462
   },
   "stories": [
     {
@@ -565,19 +565,15 @@
       "notes": "Reviewers never edit submitted data: a reviewer (or rule U1, automatically) raises a correction request; the job seeker answers with an attested correction, confirmation or 'unavailable', stored as a new version with the original kept; the reviewer's ruling closes it. Each action is logged with actor and time. Known limits: actor IDs are typed in (no login yet), and STORY-003's edit form still overwrites the stored row; a later correction to the same field displays over it, and STORY-016 removes that form.",
       "updated_at": "2026-10-04T20:34:40.000Z",
       "verification": {
-        "state": "in_progress",
-        "criteria_passed": 0,
+        "state": "verified",
+        "criteria_passed": 3,
         "criteria_total": 3,
-        "verified_at": null,
-        "commit_sha": null,
-        "commit_url": null,
-        "commit_at": null,
-        "points_awarded": null,
-        "outstanding": [
-          "Given a dataset, when I review it manually, then I can identify and correct incomplete or incorrect data entries.",
-          "Given a data entry that is flagged as incomplete, when I complete it, then the system updates the entry accordingly.",
-          "Trust: Every manual review action is logged with the reviewer ID and timestamp."
-        ]
+        "verified_at": "2026-10-04T20:36:06.784Z",
+        "commit_sha": "58b910e89a6169f2f1cf59eb773714312e73b7b5",
+        "commit_url": "https://github.com/stoicmz/Colaberry-VendorIQ/commit/58b910e89a6169f2f1cf59eb773714312e73b7b5",
+        "commit_at": "2026-10-04T20:34:50Z",
+        "points_awarded": 47,
+        "outstanding": []
       }
     },
     {
@@ -783,7 +779,21 @@
       "tests_added": [],
       "notes": null,
       "updated_at": null,
-      "verification": null
+      "verification": {
+        "state": "in_progress",
+        "criteria_passed": 0,
+        "criteria_total": 3,
+        "verified_at": null,
+        "commit_sha": null,
+        "commit_url": null,
+        "commit_at": null,
+        "points_awarded": null,
+        "outstanding": [
+          "Given an interaction with incorrect attribution, when I identify it during review, then I can request a correction from the job seeker with a reason, and I cannot change the attribution myself.",
+          "Given an attribution correction request, when the job seeker responds, by correcting the recruiter name or company, confirming the original is correct, or stating the information is unavailable, with a reason in each case, then the system records the response (any correction as a new attested version, with the original kept) and returns the interaction for review.",
+          "Trust: Every request, response and review decision is logged with the actor's ID and timestamp."
+        ]
+      }
     }
   ]
 }
